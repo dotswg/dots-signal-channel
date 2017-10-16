@@ -145,6 +145,8 @@
       anticipated attacks . This protocol enables cooperation between DOTS
       agents to permit a highly-automated network defense that is robust,
       reliable and secure.</t>
+         
+      <t>The document adheres to the DOTS architectrue <xref target="I-D.ietf-dots-architecture"></xref>.</t>
 
       <t>The requirements for DOTS signal channel protocol are obtained from
       <xref target="I-D.ietf-dots-requirements"></xref>.</t>
