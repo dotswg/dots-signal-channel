@@ -1788,13 +1788,10 @@ A1                                      # map(1)
 ]]></artwork>
           </figure>
 
-          <t>If the DOTS server does not find the session-id parameter value
-          conveyed in the DELETE request in its configuration data, then it
-          responds with a 4.04 (Not Found) error response code. The DOTS
-          server successfully acknowledges a DOTS client's request to remove
-          the DOTS signal channel session configuration using 2.02 (Deleted)
-          response code and resets the DOTS signal channel session
-          configuration back to the default values.</t>
+          <t>The DOTS server resets the DOTS signal channel session
+          configuration back to the default values and acknowledges a DOTS
+          client's request to remove the DOTS signal channel session
+          configuration using 2.02 (Deleted) response code.</t>
         </section>
       </section>
 

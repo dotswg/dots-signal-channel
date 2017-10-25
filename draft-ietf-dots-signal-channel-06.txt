@@ -2051,13 +2051,10 @@ Internet-Draft             DOTS Signal Channel              October 2017
 
                       Figure 18: DELETE configuration
 
-   If the DOTS server does not find the session-id parameter value
-   conveyed in the DELETE request in its configuration data, then it
-   responds with a 4.04 (Not Found) error response code.  The DOTS
-   server successfully acknowledges a DOTS client's request to remove
-   the DOTS signal channel session configuration using 2.02 (Deleted)
-   response code and resets the DOTS signal channel session
-   configuration back to the default values.
+   The DOTS server resets the DOTS signal channel session configuration
+   back to the default values and acknowledges a DOTS client's request
+   to remove the DOTS signal channel session configuration using 2.02
+   (Deleted) response code.
 
 5.5.  Redirected Signaling
 
@@ -2066,6 +2063,9 @@ Internet-Draft             DOTS Signal Channel              October 2017
    the DOTS client to an alternative DOTS server for a signaling session
    then the response code 3.00 (alternate server) will be returned in
    the response to the client.  The DOTS server can return the error
+   response code 3.00 in response to a PUT request from the DOTS client
+   or convey the error response code 3.00 in a unidirectional
+   notification response from the DOTS server.
 
 
 
@@ -2073,10 +2073,6 @@ Reddy, et al.            Expires April 28, 2018                [Page 37]
 
 Internet-Draft             DOTS Signal Channel              October 2017
 
-
-   response code 3.00 in response to a PUT request from the DOTS client
-   or convey the error response code 3.00 in a unidirectional
-   notification response from the DOTS server.
 
    The DOTS server in the error response conveys the alternate DOTS
    server FQDN, and the alternate DOTS server IP addresses and time to
@@ -2123,6 +2119,10 @@ Internet-Draft             DOTS Signal Channel              October 2017
 
                  Figure 20: Example of error response body
 
+   When the DOTS client receives 3.00 response, it considers the current
+   request as having failed, but SHOULD try the request with the
+   alternate DOTS server.  During a DDOS attack, the DNS server may be
+
 
 
 Reddy, et al.            Expires April 28, 2018                [Page 38]
@@ -2130,9 +2130,6 @@ Reddy, et al.            Expires April 28, 2018                [Page 38]
 Internet-Draft             DOTS Signal Channel              October 2017
 
 
-   When the DOTS client receives 3.00 response, it considers the current
-   request as having failed, but SHOULD try the request with the
-   alternate DOTS server.  During a DDOS attack, the DNS server may be
    subjected to DDOS attack, alternate DOTS server IP addresses conveyed
    in the 3.00 response help the DOTS client to skip DNS lookup of the
    alternate DOTS server and can try to establish UDP or TCP session
@@ -2174,6 +2171,9 @@ Internet-Draft             DOTS Signal Channel              October 2017
    mapped to CBOR types as follows and are given an integer key to save
    space.  The recipient of the payload MAY reject the information if it
    is not suitably mapped.
+
+
+
 
 
 
