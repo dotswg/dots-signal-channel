@@ -137,14 +137,14 @@
       attack. The victim in this attack can be an application server, a host,
       a router, a firewall, or an entire network.</t>
 
-      <t>In many cases, it may not be possible for an network administrators
-      to determine the causes of an attack, but instead just realize that
-      certain resources seem to be under attack. This document defines a
-      lightweight protocol permitting a DOTS client to request mitigation from
-      one or more DOTS servers for protection against detected, suspected, or
-      anticipated attacks . This protocol enables cooperation between DOTS
-      agents to permit a highly-automated network defense that is robust,
-      reliable and secure.</t>
+      <t>In many cases, it may not be possible for network administrators to
+      determine the causes of an attack, but instead just realize that certain
+      resources seem to be under attack. This document defines a lightweight
+      protocol permitting a DOTS client to request mitigation from one or more
+      DOTS servers for protection against detected, suspected, or anticipated
+      attacks . This protocol enables cooperation between DOTS agents to
+      permit a highly-automated network defense that is robust, reliable and
+      secure.</t>
 
       <t>The requirements for DOTS signal channel protocol are obtained from
       <xref target="I-D.ietf-dots-requirements"></xref>.</t>
@@ -313,7 +313,7 @@ DOTS client                                               DOTS server
       <t>In reference to <xref target="fig_happy_eyeballs"></xref>, the DOTS
       client sends two TCP SYNs and two DTLS ClientHello messages at the same
       time over IPv6 and IPv4. In this example, it is assumed that the IPv6
-      path is broken and UDP is dropped by a middle box but has little impact
+      path is broken and UDP is dropped by a middlebox but has little impact
       to the DOTS client because there is no long delay before using IPv4 and
       TCP. The DOTS client repeats the mechanism to discover if DOTS signaling
       with DTLS over UDP becomes available from the DOTS server, so the DOTS
@@ -363,7 +363,8 @@ DOTS client                                               DOTS server
         channel is established, the DOTS agents periodically send heartbeats
         to keep the channel active. At any time, the DOTS client may send a
         mitigation request message to the DOTS server over the active channel.
-        While mitigation is active, the DOTS server periodically sends status
+        While mitigation is active, due to the higher likelihood of packet
+        loss during a DDoS attack, the DOTS server periodically sends status
         messages to the client, including basic mitigation feedback details.
         Mitigation remains active until the DOTS client explicitly terminates
         mitigation, or the mitigation lifetime expires.</t>
@@ -740,7 +741,7 @@ module ietf-dots-signal-config {
   Content-Type: "application/cbor"
   {
     "mitigation-scope": {
-      "client-identifer": "string", 
+      "client-identifier": "string", 
       "scope": [
         {
           "mitigation-id": integer,  
@@ -779,13 +780,18 @@ module ietf-dots-signal-config {
           <t>The parameters are described below.</t>
 
           <t><list style="hanging">
-              <t hangText="client-identifer:">The client identifer MAY be
+              <t hangText="client-identifier:">The client identifier MAY be
               conveyed by the DOTS gateway to propagate the DOTS client
-              identity to the DOTS server. The'client-identifier' value MUST
-              be assigned by the DOTS gateway in a manner that ensures that
-              there is no probability that the same value will be accidentally
-              assigned to a different DOTS client. The client-identifier
-              attribute SHOULD NOT to be advertised by the DOTS client.</t>
+              identity from the gateway's client-side to the gateway's
+              server-side, and from the gateway's server-side to the DOTS
+              server. This allows the final DOTS server to accept mitigation
+              requests with scopes which the DOTS client is authorized to
+              manage. The 'client-identifier' value MUST be assigned by the
+              DOTS gateway in a manner that ensures that there is no
+              probability that the same value will be accidentally assigned to
+              a different DOTS client. The client-identifier attribute SHOULD
+              NOT to be generated and included by the DOTS client. This is an
+              optional attribute.</t>
 
               <t hangText="mitigation-id:">Identifier for the mitigation
               request represented using an integer. This identifier MUST be
@@ -849,7 +855,7 @@ module ietf-dots-signal-config {
               the response. The server MUST always indicate the actual
               lifetime in the response and the remaining lifetime in status
               messages sent to the client. This is a mandatory parameter for
-              responses. </t>
+              responses.</t>
             </list></t>
 
           <t>The CBOR key values for the parameters are defined in <xref
@@ -881,14 +887,15 @@ module ietf-dots-signal-config {
           specification uses v1 major version.</t>
 
           <t>If the DOTS client is using the certificate provisioned by the
-          EST server in the DOTS gateway-domain to authenticate itself to the
-          DOTS gateway, then the 'client-identifier' value will be the output
-          of a cryptographic hash algorithm whose input is the DER-encoded
-          ASN.1 representation of the Subject Public Key Info (SPKI) of an
-          X.509 certificate. The output of the cryptographic hash algorithm is
-          base64url encoded. In this version of the specification, the
-          cryptographic hash algorithm used is SHA-256 <xref
-          target="RFC6234"></xref>. If the 'client-identifier' value is
+          Enrollment over Secure Transport (EST) server <xref
+          target="RFC6234"></xref> in the DOTS gateway-domain to authenticate
+          itself to the DOTS gateway, then the 'client-identifier' value will
+          be the output of a cryptographic hash algorithm whose input is the
+          DER-encoded ASN.1 representation of the Subject Public Key Info
+          (SPKI) of an X.509 certificate. The output of the cryptographic hash
+          algorithm is base64url encoded. In this version of the
+          specification, the cryptographic hash algorithm used is SHA-256
+          <xref target="RFC6234"></xref>. If the 'client-identifier' value is
           already present in the mitigation request received from the DOTS
           client, the DOTS gateway computes the 'client-identifier' value, as
           discussed above, and adds the computed 'client-identifier' value to
@@ -896,26 +903,26 @@ module ietf-dots-signal-config {
 
           <t>In both DOTS signal and data channel sessions, the DOTS client
           MUST authenticate itself to the DOTS server (<xref
-          target="mutauth"></xref>). If the 'client-identifier' value is not
-          present in the mitigation request, the DOTS server may use the
-          algorithm in Section 7 of <xref target="RFC7589"></xref> to derive
-          the DOTS client identity or username from the client certificate.
-          The DOTS server couples the DOTS signal and data channel sessions
-          using the DOTS client identity, so the DOTS server can validate
-          whether the aliases conveyed in the mitigation request were indeed
-          created by the same DOTS client using the DOTS data channel session.
-          If the aliases were not created by the DOTS client, the DOTS server
-          returns 4.00 (Bad Request) in the response.</t>
+          target="mutauth"></xref>). The DOTS server may use the algorithm in
+          Section 7 of <xref target="RFC7589"></xref> to derive the DOTS
+          client identity or username from the client certificate. The DOTS
+          server couples the DOTS signal and data channel sessions using the
+          DOTS client identity and the 'client-identifier' parameter value, so
+          the DOTS server can validate whether the aliases conveyed in the
+          mitigation request were indeed created by the same DOTS client using
+          the DOTS data channel session. If the aliases were not created by
+          the DOTS client, the DOTS server returns 4.00 (Bad Request) in the
+          response.</t>
 
           <t>The DOTS server couples the DOTS signal channel sessions using
-          the DOTS client identity, and the DOTS server uses 'mitigation-id'
-          parameter value to detect duplicate mitigation requests. If the
-          mitigation request contains both alias-name and other parameters
-          identifying the target resources (such as, target-ip, target-prefix,
-          target-port-range, fqdn, or uri), then the DOTS server appends the
-          parameter values in alias-name with the corresponding parameter
-          values in target-ip, target-prefix, target-port-range, fqdn, or
-          uri.</t>
+          the DOTS client identity and the 'client-identifier' parameter
+          value, and the DOTS server uses 'mitigation-id' parameter value to
+          detect duplicate mitigation requests. If the mitigation request
+          contains both alias-name and other parameters identifying the target
+          resources (such as, target-ip, target-prefix, target-port-range,
+          fqdn, or uri), then the DOTS server appends the parameter values in
+          alias-name with the corresponding parameter values in target-ip,
+          target-prefix, target-port-range, fqdn, or uri.</t>
 
           <t><xref target="Figure2"></xref> shows a PUT request example to
           signal that ports 80, 8080, and 443 on the servers 2001:db8:6401::1
@@ -1006,7 +1013,7 @@ A1                                      # map(1)
           <t><figure anchor="put_response" title="2.xx response body">
               <artwork align="left"><![CDATA[{
   "mitigation-scope": {
-     "client-identifer": "string",
+     "client-identifier": "string",
      "scope": [
         {
           "mitigation-id": integer,
@@ -1045,6 +1052,11 @@ A1                                      # map(1)
           MUST use the same 'mitigation-id' value, and MUST repeat all the
           other parameters as sent in the original mitigation request apart
           from a possible change to the lifetime parameter value.</t>
+
+          <t>A DOTS gateway MUST update the &lsquo;client-identifier&rsquo;
+          list in the response to remove the 'client-identifier' value it had
+          added in the corresponding request before forwarding the response to
+          the DOTS client.</t>
         </section>
 
         <section anchor="del" title="Withdraw a DOTS Signal">
@@ -1060,7 +1072,7 @@ A1                                      # map(1)
   Content-Format: "application/cbor"
   {
     "mitigation-scope": {
-      "client-identifer": "string",
+      "client-identifier": "string",
       "scope": [
         {
           "mitigation-id": integer
@@ -1100,7 +1112,7 @@ A1                                      # map(1)
         </section>
 
         <section anchor="get" title="Retrieving a DOTS Signal">
-          <t>A GET request is used to retrieve information (inclduding status)
+          <t>A GET request is used to retrieve information (including status)
           of a DOTS signal from a DOTS server (<xref
           target="Figure4"></xref>). If the DOTS server does not find the
           'mitigation-id' parameter value conveyed in the GET request in its
@@ -1120,7 +1132,7 @@ A1                                      # map(1)
   Observe : 0
   {
     "mitigation-scope": {
-      "client-identifer": "string",
+      "client-identifier": "string",
     }     
   }
 
@@ -1137,7 +1149,7 @@ A1                                      # map(1)
   Content-Format: "application/cbor"
   {
     "mitigation-scope": {
-      "client-identifer": "string",
+      "client-identifier": "string",
       "scope": [
         {
           "mitigation-id": integer
@@ -1207,7 +1219,8 @@ A1                                      # map(1)
 
               <t hangText="bps-dropped:">The average dropped bytes per second
               for the mitigation request since the attack mitigation is
-              triggered. This is an optional attribute.</t>
+              triggered. This SHOULD be a five-minute average. This is an
+              optional attribute.</t>
 
               <t hangText="pkts-dropped:">The total dropped packet count for
               the mitigation request since the attack mitigation is triggered.
@@ -1215,7 +1228,8 @@ A1                                      # map(1)
 
               <t hangText="pps-dropped:">The average dropped packets per
               second for the mitigation request since the attack mitigation is
-              triggered. This is an optional attribute.</t>
+              triggered. This SHOULD be a five-minute average. This is an
+              optional attribute.</t>
 
               <t hangText="status:">Status of attack mitigation. The 'status'
               parameter is a mandatory attribute.</t>
@@ -1260,16 +1274,18 @@ A1                                      # map(1)
           GET request to receive unsolicited notifications of attack
           mitigation status from the DOTS server. Unidirectional notifications
           within the bidirectional signal channel allows unsolicited message
-          delivery, enabling asynchronous notifications between the agents. A
-          DOTS client that is no longer interested in receiving notifications
-          from the DOTS server can simply "forget" the observation. When the
-          DOTS server then sends the next notification, the DOTS client will
-          not recognize the token in the message and thus will return a Reset
-          message. This causes the DOTS server to remove the associated entry.
-          Alternatively, the DOTS client can explicitly deregister by issuing
-          a GET request that has the Token field set to the token of the
-          observation to be cancelled and includes an Observe Option with the
-          value set to 1 (deregister).</t>
+          delivery, enabling asynchronous notifications between the agents.
+          Whenever the status of the attack mitigation changes, the DOTS
+          server notifies the DOTS client. A DOTS client that is no longer
+          interested in receiving notifications from the DOTS server can
+          simply "forget" the observation. When the DOTS server then sends the
+          next notification, the DOTS client will not recognize the token in
+          the message and thus will return a Reset message. This causes the
+          DOTS server to remove the associated entry. Alternatively, the DOTS
+          client can explicitly deregister by issuing a GET request that has
+          the Token field set to the token of the observation to be cancelled
+          and includes an Observe Option with the value set to 1
+          (deregister).</t>
 
           <t><figure anchor="Figure6"
               title="Notifications of attack mitigation status">
@@ -1326,10 +1342,11 @@ A1                                      # map(1)
         </section>
 
         <section anchor="put" title="Efficacy Update from DOTS Client">
-          <t>While DDoS mitigation is active, a DOTS client MAY frequently
-          transmit DOTS mitigation efficacy updates to the relevant DOTS
-          server. A PUT request (<xref target="Figure7"></xref>) is used to
-          convey the mitigation efficacy update to the DOTS server.</t>
+          <t>While DDoS mitigation is active, due to the likelihood of packet
+          loss, a DOTS client MAY periodically transmit DOTS mitigation
+          efficacy updates to the relevant DOTS server. A PUT request (<xref
+          target="Figure7"></xref>) is used to convey the mitigation efficacy
+          update to the DOTS server.</t>
 
           <t>The PUT request MUST include all the parameters used in the PUT
           request to convey the DOTS signal (<xref target="post"></xref>)
@@ -1360,7 +1377,7 @@ A1                                      # map(1)
    Content-Format: "application/cbor"
    {
     "mitigation-scope": {
-      "client-identifer": "string",
+      "client-identifier": "string",
       "scope": [
         {
           "mitigation-id": integer,  
@@ -1394,9 +1411,9 @@ A1                                      # map(1)
 ]]></artwork>
           </figure>
 
-          <t>The 'attack-status' parameter is a mandatory attribute. The
-          various possible values contained in the 'attack-status' parameter
-          are described below:</t>
+          <t>The 'attack-status' parameter is a mandatory attribute when doing
+          a efficacy update. The various possible values contained in the
+          'attack-status' parameter are described below:</t>
 
           <t><figure>
               <artwork><![CDATA[/--------------------+------------------------------------------------------\
@@ -1426,8 +1443,8 @@ A1                                      # map(1)
         <t>The DOTS client can negotiate, configure, and retrieve the DOTS
         signal channel session behavior. The DOTS signal channel can be used,
         for example, to configure the following:<list style="letters">
-            <t>Heartbeat interval: DOTS agents regularly send heartbeats
-            (Ping/Pong) to each other after mutual authentication in order to
+            <t>Heartbeat interval: DOTS agents regularly send heartbeats (CoAP
+            Ping/Pong) to each other after mutual authentication in order to
             keep the DOTS signal channel open, heartbeat messages are
             exchanged between the DOTS agents every heartbeat-interval seconds
             to detect the current status of the DOTS signal channel
@@ -1494,7 +1511,7 @@ A1                                      # map(1)
           <t></t>
 
           <t>The DOTS server in the 2.05 (Content) response conveys the
-          minimum and maximum attribute values acceptable by the DOTS
+          current, minimum and maximum attribute values acceptable by the DOTS
           server.</t>
 
           <t><figure anchor="Figure19" title="GET response body">
@@ -1520,10 +1537,13 @@ A1                                      # map(1)
                             "MinValue": integer, 
                             "MaxValue" : integer, 
                            },
-     "ack-random-factor": {
+     "ack-random-factor":  {
                             "CurrentValue": number,
                             "MinValue": number, 
                             "MaxValue" : number, 
+                           },
+     "trigger-mitigation": {
+                            "CurrentValue": boolean,
                            }
     }
 ]]></artwork>
@@ -1560,6 +1580,9 @@ A1                                      # map(1)
                             "CurrentValue": 1.5,
                             "MinValue": 1.1, 
                             "MaxValue" : 4.0, 
+                           },
+     "trigger-mitigation": {
+                            "CurrentValue": true,
                            }
   }
 ]]></artwork>
@@ -1597,15 +1620,19 @@ A1                                      # map(1)
               the network with too frequent keepalives.</t>
             </list></t>
 
-          <t>For the recommended transmission parameters, if the DOTS agent
-          does not receive any response from the peer DOTS agent for five
-          (missing-hb-allowed) consecutive "CoAP ping" confirmable messages,
-          then it concludes that the DOTS signal channel session is
-          disconnected, and a "CoAP ping" confirmable message is retransmitted
-          three (max-retransmit) times using an initial timeout set to a
-          random duration between 2 (ack_timeout) and 3 seconds
+          <t>When a confirmable "CoAP ping" is sent, and if there is no
+          response, the "CoAP ping" will get retransmitted max-retransmit
+          number of times by the CoAP layer using an initial timeout set to a
+          random duration between ack_timeout and
           (ack-timeout*ack-random-factor) and exponential back-off between
-          retransmissions.</t>
+          retransmissions. By choosing the recommended transmission
+          parameters, the "CoAP ping" will timeout after 45 seconds. If the
+          DOTS agent does not receive any response from the peer DOTS agent
+          for missing-hb-allowed number of consecutive "CoAP ping" confirmable
+          messages, then it concludes that the DOTS signal channel session is
+          disconnected. A DOTS client MUST NOT transmit a "CoAP ping" while
+          waiting for the previous "CoAP ping" response from the same DOTS
+          server.</t>
 
           <t>If the DOTS agent wishes to change the default values of message
           transmission parameters, then it should follow the guidance given in
@@ -1673,7 +1700,7 @@ A1                                      # map(1)
 
               <t hangText="trigger-mitigation: ">If the parameter value is set
               to 'false', then DDoS mitigation is triggered only when the DOTS
-              signal channel session is lost. Automated mtigation on loss of
+              signal channel session is lost. Automated mitigation on loss of
               signal is discussed in Section 3.3.3 of <xref
               target="I-D.ietf-dots-architecture"></xref>. If the DOTS client
               ceases to respond to heartbeat messages, then the DOTS server
@@ -1738,7 +1765,7 @@ A1                                      # map(1)
               max-retransmit, target-protocol, ack-timeout, and
               ack-random-factor attribute values are not acceptable to the
               DOTS server. Upon receipt of the 4.22 error response code, the
-              DOTS client should request the maximum and minumum attribute
+              DOTS client should request the maximum and minimum attribute
               values acceptable to the DOTS server (<xref
               target="discovery"></xref>). The DOTS client may re-try and send
               the PUT request with updated attribute values acceptable to the
@@ -1758,11 +1785,6 @@ A1                                      # map(1)
   Uri-Path: "dots-signal"
   Uri-Path: "config"
   Content-Format: "application/cbor"
-  {
-    "signal-config": {
-     "session-id": integer
-    }
-  }
 ]]></artwork>
           </figure>
 
@@ -1771,29 +1793,8 @@ A1                                      # map(1)
           responds with a 4.04 (Not Found) error response code. The DOTS
           server successfully acknowledges a DOTS client's request to remove
           the DOTS signal channel session configuration using 2.02 (Deleted)
-          response code.</t>
-        </section>
-
-        <section title="Retrieving DOTS Signal Channel Session Configuration">
-          <t>A GET request is used to retrieve the installed DOTS signal
-          channel session configuration data from a DOTS server. <xref
-          target="Figure16"></xref> shows how to retrieve the DOTS signal
-          channel session configuration data.</t>
-
-          <figure anchor="Figure16" title="GET to retrieve configuration">
-            <artwork align="left"><![CDATA[  Header: GET (Code=0.01)
-  Uri-Host: "host" 
-  Uri-Path: "version"
-  Uri-Path: "dots-signal"
-  Uri-Path: "config"
-  Content-Format: "application/cbor"
-  {
-    "signal-config": {
-     "session-id": integer
-    }
-  }
-]]></artwork>
-          </figure>
+          response code and resets the DOTS signal channel session
+          configuration back to the default values.</t>
         </section>
       </section>
 
@@ -1891,10 +1892,6 @@ A1                                      # map(1)
         of <xref target="I-D.ietf-core-coap-tcp-tls"></xref>. That is, the
         DOTS agent sends a Ping message and the peer DOTS agent would respond
         by sending a single Pong message.</t>
-
-        <t>A DOTS client MUST NOT transmit a heartbeat message while waiting
-        for the previous heartbeat message response from the same DOTS
-        server.</t>
       </section>
     </section>
 
@@ -2689,6 +2686,8 @@ A1                                      # map(1)
       <?rfc include="reference.RFC.7589"?>
 
       <?rfc include='reference.RFC.4787'?>
+
+      <?rfc include='reference.RFC.7030'?>
 
       <?rfc include="reference.I-D.ietf-tls-tls13"?>
 
