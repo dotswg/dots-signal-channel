@@ -146,17 +146,12 @@
       permit a highly-automated network defense that is robust, reliable and
       secure.</t>
 
-      <t>The requirements for DOTS signal channel protocol are obtained from
-      <xref target="I-D.ietf-dots-requirements"></xref>.</t>
-
-      <t>This document satisfies all the use cases discussed in <xref
-      target="I-D.ietf-dots-use-cases"></xref> except the Third-party DOTS
-      notifications use case in Section 3.2.3 of <xref
-      target="I-D.ietf-dots-use-cases"></xref> which is an optional feature
-      and not a core use case. Third-party DOTS notifications are not part of
-      the DOTS requirements document. Moreover, the DOTS architecture does not
-      assess whether that use case may have an impact on the architecture
-      itself and/or the DOTS trust model.</t>
+      <t>The document adheres to the DOTS architecture <xref
+      target="I-D.ietf-dots-architecture"></xref>. The requirements for DOTS
+      signal channel protocol are obtained from <xref
+      target="I-D.ietf-dots-requirements"></xref>. This document satisfies all
+      the use cases discussed in <xref
+      target="I-D.ietf-dots-use-cases"></xref>. </t>
 
       <t>This is a companion document to the DOTS data channel specification
       <xref target="I-D.ietf-dots-data-channel"></xref> that defines a
@@ -741,7 +736,9 @@ module ietf-dots-signal-config {
   Content-Type: "application/cbor"
   {
     "mitigation-scope": {
-      "client-identifier": "string", 
+      "client-identifier": [
+         "string"
+      ],
       "scope": [
         {
           "mitigation-id": integer,  
@@ -786,12 +783,14 @@ module ietf-dots-signal-config {
               server-side, and from the gateway's server-side to the DOTS
               server. This allows the final DOTS server to accept mitigation
               requests with scopes which the DOTS client is authorized to
-              manage. The 'client-identifier' value MUST be assigned by the
-              DOTS gateway in a manner that ensures that there is no
-              probability that the same value will be accidentally assigned to
-              a different DOTS client. The client-identifier attribute SHOULD
-              NOT to be generated and included by the DOTS client. This is an
-              optional attribute.</t>
+              manage. <vspace blankLines="1" />The 'client-identifier' value
+              MUST be assigned by the DOTS gateway in a manner that ensures
+              that there is no probability that the same value will be
+              assigned to a different DOTS client. The DOTS gateway MUST
+              obscure potentially sensitive DOTS client identity information.
+              The client-identifier attribute SHOULD NOT to be generated and
+              included by the DOTS client. <vspace blankLines="1" />This is an
+              optional attribute. </t>
 
               <t hangText="mitigation-id:">Identifier for the mitigation
               request represented using an integer. This identifier MUST be
@@ -814,8 +813,11 @@ module ietf-dots-signal-config {
               <t hangText="target-port-range:">A list of ports under attack.
               The port range, lower-port for lower port number and upper-port
               for upper port number. When only lower-port is present, it
-              represents a single port. For TCP, UDP, SCTP, or DCCP: the range
-              of ports (e.g., 1024-65535). This is an optional attribute.</t>
+              represents a single port. For TCP, UDP, Stream Control
+              Transmission Protocol (SCTP) <xref target="RFC4960"></xref>, or
+              Datagram Congestion Control Protocol (DCCP) <xref
+              target="RFC4340"></xref>: the range of ports (e.g., 1024-65535).
+              This is an optional attribute.</t>
 
               <t hangText="target-protocol:">A list of protocols under attack.
               Values are taken from the IANA protocol registry <xref
@@ -843,19 +845,19 @@ module ietf-dots-signal-config {
               seconds (60 minutes) -- this value was chosen to be long enough
               so that refreshing is not typically a burden on the DOTS client,
               while expiring the request where the client has unexpectedly
-              quit in a timely manner. A lifetime of negative one (-1)
-              indicates indefinite lifetime for the mitigation request. DOTS
-              clients SHOULD include this parameter in their mitigation
-              requests. If no lifetime is supplied by a DOTS client, the DOTS
-              server uses the default lifetime value (3600 seconds). Upon the
-              expiry of this lifetime, and if the request is not refreshed,
-              the mitigation request is removed. The request can be refreshed
-              by sending the same request again. The server MAY refuse
-              indefinite lifetime; the granted lifetime value is returned in
-              the response. The server MUST always indicate the actual
-              lifetime in the response and the remaining lifetime in status
-              messages sent to the client. This is a mandatory parameter for
-              responses.</t>
+              quit in a timely manner. <vspace blankLines="1" />A lifetime of
+              negative one (-1) indicates indefinite lifetime for the
+              mitigation request. <vspace blankLines="1" />DOTS clients SHOULD
+              include this parameter in their mitigation requests. If no
+              lifetime is supplied by a DOTS client, the DOTS server uses the
+              default lifetime value (3600 seconds). Upon the expiry of this
+              lifetime, and if the request is not refreshed, the mitigation
+              request is removed. The request can be refreshed by sending the
+              same request again. The server MAY refuse indefinite lifetime;
+              the granted lifetime value is returned in the response. The
+              server MUST always indicate the actual lifetime in the response
+              and the remaining lifetime in status messages sent to the
+              client. This is a mandatory parameter for responses.</t>
             </list></t>
 
           <t>The CBOR key values for the parameters are defined in <xref
@@ -867,9 +869,9 @@ module ietf-dots-signal-config {
           scope alias, in which the addresses to which the domain name or URI
           resolve represent the full scope of the mitigation.</t>
 
-          <t>In the PUT request at least one of the attributes target-ip or
-          target-prefix or fqdn or uri or alias-name MUST be present. DOTS
-          agents can safely ignore Vendor-Specific parameters they don't
+          <t>In the PUT request at least one of the attributes 'target-ip' or
+          'target-prefix' or 'fqdn' or 'uri 'or 'alias-name' MUST be present.
+          DOTS agents can safely ignore Vendor-Specific parameters they don't
           understand.</t>
 
           <t>The relative order of two mitigation requests from a DOTS client
@@ -899,13 +901,17 @@ module ietf-dots-signal-config {
           already present in the mitigation request received from the DOTS
           client, the DOTS gateway computes the 'client-identifier' value, as
           discussed above, and adds the computed 'client-identifier' value to
-          the end of the 'client-identifier' list.</t>
+          the end of the 'client-identifier' list. The DOTS server MUST NOT
+          use the &lsquo;client-identifier&rsquo; for the DOTS client
+          authentication process.</t>
 
           <t>In both DOTS signal and data channel sessions, the DOTS client
           MUST authenticate itself to the DOTS server (<xref
           target="mutauth"></xref>). The DOTS server may use the algorithm in
           Section 7 of <xref target="RFC7589"></xref> to derive the DOTS
           client identity or username from the client certificate. The DOTS
+          client identity allows the DOTS server to accept mitigation requests
+          with scopes which the DOTS client is authorized to manage. The DOTS
           server couples the DOTS signal and data channel sessions using the
           DOTS client identity and the 'client-identifier' parameter value, so
           the DOTS server can validate whether the aliases conveyed in the
@@ -919,10 +925,11 @@ module ietf-dots-signal-config {
           value, and the DOTS server uses 'mitigation-id' parameter value to
           detect duplicate mitigation requests. If the mitigation request
           contains both alias-name and other parameters identifying the target
-          resources (such as, target-ip, target-prefix, target-port-range,
-          fqdn, or uri), then the DOTS server appends the parameter values in
-          alias-name with the corresponding parameter values in target-ip,
-          target-prefix, target-port-range, fqdn, or uri.</t>
+          resources (such as, 'target-ip', 'target-prefix',
+          'target-port-range', 'fqdn', or 'uri'), then the DOTS server appends
+          the parameter values in 'alias-name' with the corresponding
+          parameter values in 'target-ip', 'target-prefix',
+          'target-port-range', 'fqdn', or 'uri'.</t>
 
           <t><xref target="Figure2"></xref> shows a PUT request example to
           signal that ports 80, 8080, and 443 on the servers 2001:db8:6401::1
@@ -938,7 +945,9 @@ module ietf-dots-signal-config {
   Content-Format: "application/cbor"
   {
     "mitigation-scope": {
-      "client-identifier": "E9CZ9INDbd+2eRQozYqqbQ2yXLVKB9+xcprMF+44U1g=",
+      "client-identifier": [
+         "E9CZ9INDbd+2eRQozYqqbQ2yXLVKB9+xcprMF+44U1g="
+      ],
       "scope": [
         {
           "mitigation-id": 12332,  
@@ -971,8 +980,9 @@ A1                                      # map(1)
    01                                   # unsigned(1)
    A2                                   # map(2)
       18 20                             # unsigned(32)
-      78 2C                             # text(44)
-         4539435A39494E4462642B326552516F7A59717162513279584C564B42392B786370724D462B34345531673D 
+      81                                # array(1)
+         78 2C                          # text(44)
+            4539435A39494E4462642B326552516F7A59717162513279584C564B42392B786370724D462B34345531673D 
                                         # "E9CZ9INDbd+2eRQozYqqbQ2yXLVKB9+xcprMF+44U1g="
       02                                # unsigned(2)
       81                                # array(1)
@@ -999,6 +1009,7 @@ A1                                      # map(1)
             08                          # unsigned(8)
             81                          # array(1)
                06                       # unsigned(6)
+
 
 
 ]]></artwork>
@@ -1275,8 +1286,14 @@ A1                                      # map(1)
           mitigation status from the DOTS server. Unidirectional notifications
           within the bidirectional signal channel allows unsolicited message
           delivery, enabling asynchronous notifications between the agents.
-          Whenever the status of the attack mitigation changes, the DOTS
-          server notifies the DOTS client. A DOTS client that is no longer
+          Due to the higher likelihood of packet loss during a DDoS attack,
+          DOTS server periodically sends attack mitigation status to the DOTS
+          client and also notifies the DOTS client whenever the status of the
+          attack mitigation changes. If the DOTS server cannot maintain a RTT
+          estimate then it SHOULD NOT send more than one unsolicited
+          notification every 3 seconds, and SHOULD use an even less aggressive
+          rate when possible (case 2 in Section 3.1.3 of <xref
+          target="RFC8085"></xref>). A DOTS client that is no longer
           interested in receiving notifications from the DOTS server can
           simply "forget" the observation. When the DOTS server then sends the
           next notification, the DOTS client will not recognize the token in
@@ -2090,7 +2107,7 @@ A1                                      # map(1)
  |   | Application   |                +------+--+  |
  |   | server        +                       ^
  |   | (DOTS client) |<-----------------+    |     |
- |   +---------------+                  +    |     |                example.net domain
+ |   +---------------+                  |    |     |                example.net domain
  |                                      V    V     |
  |                               +-------------+   |              +---------------+
  |  +--------------+             |             |   |              |               |
@@ -2685,6 +2702,10 @@ A1                                      # map(1)
       <?rfc include='reference.RFC.4787'?>
 
       <?rfc include='reference.RFC.7030'?>
+
+      <?rfc include='reference.RFC.4340'?>
+
+      <?rfc include='reference.RFC.4960'?>
 
       <?rfc include="reference.I-D.ietf-tls-tls13"?>
 
