@@ -1024,7 +1024,9 @@ A1                                      # map(1)
           <t><figure anchor="put_response" title="2.xx response body">
               <artwork align="left"><![CDATA[{
   "mitigation-scope": {
-     "client-identifier": "string",
+     "client-identifier": [
+         "string"
+     ],
      "scope": [
         {
           "mitigation-id": integer,
@@ -1083,7 +1085,9 @@ A1                                      # map(1)
   Content-Format: "application/cbor"
   {
     "mitigation-scope": {
-      "client-identifier": "string",
+      "client-identifier": [
+         "string"
+      ],
       "scope": [
         {
           "mitigation-id": integer
@@ -1130,7 +1134,8 @@ A1                                      # map(1)
           configuration data, then it responds with a 4.04 (Not Found) error
           response code. The 'c' (content) parameter and its permitted values
           defined in <xref target="I-D.ietf-core-comi"></xref> can be used to
-          retrieve non-configuration data or configuration data or both.</t>
+          retrieve non-configuration data (attack mitigation status) or
+          configuration data or both.</t>
 
           <figure anchor="Figure4" title="GET to retrieve the rules">
             <artwork align="left"><![CDATA[1) To retrieve all DOTS signals signaled by the DOTS client.
@@ -1143,7 +1148,9 @@ A1                                      # map(1)
   Observe : 0
   {
     "mitigation-scope": {
-      "client-identifier": "string",
+      "client-identifier": [
+         "string"
+      ]
     }     
   }
 
@@ -1160,7 +1167,9 @@ A1                                      # map(1)
   Content-Format: "application/cbor"
   {
     "mitigation-scope": {
-      "client-identifier": "string",
+      "client-identifier": [
+         "string"
+      ],
       "scope": [
         {
           "mitigation-id": integer
@@ -1394,7 +1403,9 @@ A1                                      # map(1)
    Content-Format: "application/cbor"
    {
     "mitigation-scope": {
-      "client-identifier": "string",
+      "client-identifier": [
+         "string"
+      ],
       "scope": [
         {
           "mitigation-id": integer,  
