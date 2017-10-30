@@ -355,10 +355,10 @@ Internet-Draft             DOTS Signal Channel              October 2017
    defined in Section 10.1, for both UDP and TCP, unless the DOTS server
    has mutual agreement with its DOTS clients to use a port other than
    TBD for DOTS signal channel, or DOTS clients supports means to
-   dynamically discover the transport addresses used by their DOTS
-   server.  In order to use a distinct port number (vs.  TBD), DOTS
-   clients and servers should support a configurable parameter to supply
-   the port number to use.
+   dynamically discover the ports used by their DOTS server.  In order
+   to use a distinct port number (vs.  TBD), DOTS clients and servers
+   should support a configurable parameter to supply the port number to
+   use.
 
                                   +--------------+
                                   |    DOTS      |

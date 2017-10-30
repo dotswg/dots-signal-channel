@@ -335,10 +335,10 @@ DOTS client                                               DOTS server
         defined in <xref target="port"></xref>, for both UDP and TCP, unless
         the DOTS server has mutual agreement with its DOTS clients to use a
         port other than TBD for DOTS signal channel, or DOTS clients supports
-        means to dynamically discover the transport addresses used by their
-        DOTS server. In order to use a distinct port number (vs. TBD), DOTS
-        clients and servers should support a configurable parameter to supply
-        the port number to use.</t>
+        means to dynamically discover the ports used by their DOTS server. In
+        order to use a distinct port number (vs. TBD), DOTS clients and
+        servers should support a configurable parameter to supply the port
+        number to use.</t>
 
         <t><figure anchor="fig_dots"
             title="Abstract Layering of DOTS signal channel over CoAP over (D)TLS">
