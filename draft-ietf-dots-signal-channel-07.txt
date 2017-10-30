@@ -78,7 +78,7 @@ Table of Contents
      5.1.  Overview  . . . . . . . . . . . . . . . . . . . . . . . .   7
      5.2.  DOTS Signal YANG Module . . . . . . . . . . . . . . . . .   8
        5.2.1.  Mitigation Request YANG Module Tree Structure . . . .   8
-       5.2.2.  Mitigation Request YANG Module  . . . . . . . . . . .   8
+       5.2.2.  Mitigation Request YANG Module  . . . . . . . . . . .   9
        5.2.3.  Session Configuration YANG Module Tree Structure  . .  11
        5.2.4.  Session Configuration YANG Module . . . . . . . . . .  12
      5.3.  CoAP URIs . . . . . . . . . . . . . . . . . . . . . . . .  14
@@ -352,11 +352,13 @@ Internet-Draft             DOTS Signal Channel              October 2017
    The DOTS signal channel is layered on existing standards (Figure 4).
 
    By default, DOTS signal channel MUST run over port number TBD as
-   defined in Section 10, for both UDP and TCP, unless the DOTS server
+   defined in Section 10.1, for both UDP and TCP, unless the DOTS server
    has mutual agreement with its DOTS clients to use a port other than
-   TBD for DOTS signal channel.  In order to use a port other than TBD,
-   both DOTS clients and servers would need a configuration option in
-   their software.
+   TBD for DOTS signal channel, or DOTS clients supports means to
+   dynamically discover the transport addresses used by their DOTS
+   server.  In order to use a distinct port number (vs.  TBD), DOTS
+   clients and servers should support a configurable parameter to supply
+   the port number to use.
 
                                   +--------------+
                                   |    DOTS      |
@@ -383,9 +385,7 @@ Internet-Draft             DOTS Signal Channel              October 2017
    details.  Mitigation remains active until the DOTS client explicitly
    terminates mitigation, or the mitigation lifetime expires.
 
-   Messages exchanged between DOTS client and server are serialized
-   using Concise Binary Object Representation (CBOR) [RFC7049], CBOR is
-   a binary encoding designed for small code and message size.  CBOR
+
 
 
 
@@ -394,6 +394,9 @@ Reddy, et al.              Expires May 3, 2018                  [Page 7]
 Internet-Draft             DOTS Signal Channel              October 2017
 
 
+   Messages exchanged between DOTS client and server are serialized
+   using Concise Binary Object Representation (CBOR) [RFC7049], CBOR is
+   a binary encoding designed for small code and message size.  CBOR
    encoded payloads are used to convey signal channel specific payload
    messages that convey request parameters and response information such
    as errors.  This specification uses the encoding rules defined in
@@ -435,13 +438,10 @@ Internet-Draft             DOTS Signal Channel              October 2017
              +--rw alias-name*          string
              +--rw lifetime?            int32
 
-5.2.2.  Mitigation Request YANG Module
 
-<CODE BEGINS> file "ietf-dots-signal@2017-10-04.yang"
 
-module ietf-dots-signal {
-      yang-version 1.1;
-      namespace "urn:ietf:params:xml:ns:yang:ietf-dots-signal";
+
+
 
 
 
@@ -450,6 +450,13 @@ Reddy, et al.              Expires May 3, 2018                  [Page 8]
 Internet-Draft             DOTS Signal Channel              October 2017
 
 
+5.2.2.  Mitigation Request YANG Module
+
+<CODE BEGINS> file "ietf-dots-signal@2017-10-04.yang"
+
+module ietf-dots-signal {
+      yang-version 1.1;
+      namespace "urn:ietf:params:xml:ns:yang:ietf-dots-signal";
       prefix "signal";
 
       import ietf-inet-types {
@@ -491,13 +498,6 @@ Internet-Draft             DOTS Signal Channel              October 2017
 
      revision 2017-08-03 {
        reference
-       "https://tools.ietf.org/html/draft-reddy-dots-signal-channel";
-     }
-
-     container mitigation-scope {
-          description
-             "Top level container for a mitigation request.";
-
 
 
 
@@ -505,6 +505,13 @@ Reddy, et al.              Expires May 3, 2018                  [Page 9]
 
 Internet-Draft             DOTS Signal Channel              October 2017
 
+
+       "https://tools.ietf.org/html/draft-reddy-dots-signal-channel";
+     }
+
+     container mitigation-scope {
+          description
+             "Top level container for a mitigation request.";
 
           leaf-list client-identifier {
              type binary;
@@ -547,13 +554,6 @@ Internet-Draft             DOTS Signal Channel              October 2017
 
                   leaf upper-port {
                      type inet:port-number;
-                         must ". >= ../lower-port" {
-                           error-message
-                           "The upper port number must be greater than or
-                            equal to lower port number.";
-                         }
-                         description "Upper port number.";
-                  }
 
 
 
@@ -562,6 +562,13 @@ Reddy, et al.              Expires May 3, 2018                 [Page 10]
 Internet-Draft             DOTS Signal Channel              October 2017
 
 
+                         must ". >= ../lower-port" {
+                           error-message
+                           "The upper port number must be greater than or
+                            equal to lower port number.";
+                         }
+                         description "Upper port number.";
+                  }
               }
 
               leaf-list target-protocol {
@@ -601,13 +608,6 @@ Internet-Draft             DOTS Signal Channel              October 2017
 
    This document defines the YANG module "ietf-dots-signal-config",
    which has the following structure:
-
-
-
-
-
-
-
 
 
 
@@ -1086,8 +1086,8 @@ Internet-Draft             DOTS Signal Channel              October 2017
    Subject Public Key Info (SPKI) of an X.509 certificate.  In this
    version of the specification, the cryptographic hash algorithm used
    is SHA-256 [RFC6234].  The output of the cryptographic hash algorithm
-   is truncated to 16 bytes, truncation is done by stripping off the
-   final bytes.  The truncated output is base64 encoded.  If the
+   is truncated to 16 bytes; truncation is done by stripping off the
+   final 16 bytes.  The truncated output is base64 encoded.  If the
    'client-identifier' value is already present in the mitigation
    request received from the DOTS client, the DOTS gateway computes the
    'client-identifier' value, as discussed above, and adds the computed
@@ -1360,9 +1360,9 @@ Internet-Draft             DOTS Signal Channel              October 2017
    retrieve non-configuration data (attack mitigation status) or
    configuration data or both.  The DOTS server SHOULD support this
    optional filtering capability but can safely ignore it if not
-   supported.  The examples below assume the default of "c=a".
+   supported.
 
-
+   The examples below assume the default of "c=a".
 
 
 
@@ -2299,10 +2299,10 @@ Internet-Draft             DOTS Signal Channel              October 2017
 
 
    the DOTS agents MUST behave differently to handle message
-   transmission and DOTS session liveliness during link saturation.
+   transmission and DOTS session liveliness during link saturation:
 
    o  The DOTS client MUST NOT consider the DOTS session terminated even
-      after maximum "missing-hb-allowed" threshold is reached.  DOTS
+      after maximum "missing-hb-allowed" threshold is reached.  The DOTS
       client SHOULD continue to use the current DOTS session, and send
       heartbeat requests over the current DOTS session, so the DOTS
       server knows the DOTS client has not disconnected the DOTS
@@ -2317,7 +2317,7 @@ Internet-Draft             DOTS Signal Channel              October 2017
       resumption or if (D)TLS session resumption is successful then
       disconnect the current DOTS session.
 
-   o  If the DOTS server does not receive any traffic from the DOTS
+   o  If the DOTS server does not receive any traffic from the peer DOTS
       client, then the DOTS server sends heartbeat requests to the DOTS
       client and if "trigger-mitigation" is set to "false", then trigger
       DDoS mitigation after maximum "missing-hb-allowed" threshold is
