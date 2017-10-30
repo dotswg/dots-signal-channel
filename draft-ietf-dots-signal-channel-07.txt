@@ -1087,7 +1087,7 @@ Internet-Draft             DOTS Signal Channel              October 2017
    version of the specification, the cryptographic hash algorithm used
    is SHA-256 [RFC6234].  The output of the cryptographic hash algorithm
    is truncated to 16 bytes, truncation is done by stripping off the
-   final bytes.  The truncated output is base64url encoded.  If the
+   final bytes.  The truncated output is base64 encoded.  If the
    'client-identifier' value is already present in the mitigation
    request received from the DOTS client, the DOTS gateway computes the
    'client-identifier' value, as discussed above, and adds the computed

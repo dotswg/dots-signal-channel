@@ -920,8 +920,8 @@ module ietf-dots-signal-config {
           specification, the cryptographic hash algorithm used is SHA-256
           <xref target="RFC6234"></xref>. The output of the cryptographic hash
           algorithm is truncated to 16 bytes, truncation is done by stripping
-          off the final bytes. The truncated output is base64url encoded. If
-          the 'client-identifier' value is already present in the mitigation
+          off the final bytes. The truncated output is base64 encoded. If the
+          'client-identifier' value is already present in the mitigation
           request received from the DOTS client, the DOTS gateway computes the
           'client-identifier' value, as discussed above, and adds the computed
           'client-identifier' value to the end of the 'client-identifier'
