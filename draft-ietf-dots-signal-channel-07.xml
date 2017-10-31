@@ -335,7 +335,7 @@ DOTS client                                               DOTS server
         defined in <xref target="port"></xref>, for both UDP and TCP, unless
         the DOTS server has mutual agreement with its DOTS clients to use a
         port other than TBD for DOTS signal channel, or DOTS clients supports
-        means to dynamically discover the ports used by their DOTS server. In
+        means to dynamically discover the ports used by their DOTS servers. In
         order to use a distinct port number (vs. TBD), DOTS clients and
         servers should support a configurable parameter to supply the port
         number to use.</t>
@@ -877,11 +877,13 @@ module ietf-dots-signal-config {
               default lifetime value (3600 seconds). Upon the expiry of this
               lifetime, and if the request is not refreshed, the mitigation
               request is removed. The request can be refreshed by sending the
-              same request again. The server MAY refuse indefinite lifetime;
-              the granted lifetime value is returned in the response. The
-              server MUST always indicate the actual lifetime in the response
-              and the remaining lifetime in status messages sent to the
-              client. This is a mandatory parameter for responses.</t>
+              same request again. The server MAY refuse indefinite lifetime,
+              for policy reasons; the granted lifetime value is returned in
+              the response. DOTS clients MUST be prepared to not be granted
+              mitigations with indefinite lifetimes. The server MUST always
+              indicate the actual lifetime in the response and the remaining
+              lifetime in status messages sent to the client. This is a
+              mandatory parameter for responses.</t>
             </list></t>
 
           <t>The CBOR key values for the parameters are defined in <xref
@@ -1142,15 +1144,18 @@ A1                                      # map(1)
           period after acknowledging a DOTS client's withdrawal of a
           mitigation request. During this period, the DOTS server status
           messages SHOULD indicate that mitigation is active but terminating.
-          The active-but-terminating period MUST be set by default to 30
-          seconds. If the DOTS client requests mitigation again before that 30
-          second expires, the DOTS server MAY exponentially increase the
-          active-but-terminating timeout up to a maximum of 240 seconds (4
-          minutes). After the active-but-terminating period expires, the DOTS
-          server MUST treat the mitigation as terminated. That is, the DOTS
-          client is no longer responsible for the mitigation. For example, if
-          there is a financial relationship between the DOTS client and server
-          domains, the DOTS client ceases incurring cost at this point.</t>
+          The initial active-but-terminating period SHOULD be sufficiently
+          long to absorb latency incurred by route propagation. The
+          active-but-terminating period SHOULD be set by default to 60
+          seconds. If the client requests mitigation again before the initial
+          active-but-terminating period elapses, the DOTS server MAY
+          exponentially increase the active-but- terminating period up to a
+          maximum of 300 seconds (5 minutes). After the active-but-terminating
+          period elapses, the DOTS server MUST treat the mitigation as
+          terminated, as the DOTS client is no longer responsible for the
+          mitigation. For example, if there is a financial relationship
+          between the DOTS client and server domains, the DOTS client ceases
+          incurring cost at this point. </t>
         </section>
 
         <section anchor="get" title="Retrieving a DOTS Signal">
@@ -1164,7 +1169,7 @@ A1                                      # map(1)
           retrieve non-configuration data (attack mitigation status) or
           configuration data or both. The DOTS server SHOULD support this
           optional filtering capability but can safely ignore it if not
-          supported. </t>
+          supported.</t>
 
           <t>The examples below assume the default of "c=a".</t>
 
@@ -2033,6 +2038,10 @@ A1                                      # map(1)
 | mitigation-start   | 30                     | 7 (floating-point)       |
 | target-prefix      | 31                     | 4 (array)                |
 | client-identifier  | 32                     | 2 (byte string)          |
+| alt-server         | 33                     | 2                        |
+| alt-server-record  | 34                     | 4                        |
+| addr               | 35                     | 2                        |
+| ttl                | 36                     | 0                        |
 \--------------------+------------------------+--------------------------/]]></artwork>
 
           <!--
@@ -2615,6 +2624,46 @@ A1                                      # map(1)
               <t>CBOR Key Value: 32</t>
 
               <t>CBOR Major Type: 2</t>
+
+              <t>Change Controller: IESG</t>
+
+              <t>Specification Document(s): this document</t>
+            </list><list style="symbols">
+              <t>Parameter Name:alt-server</t>
+
+              <t>CBOR Key Value: 33</t>
+
+              <t>CBOR Major Type: 2</t>
+
+              <t>Change Controller: IESG</t>
+
+              <t>Specification Document(s): this document</t>
+            </list><list style="symbols">
+              <t>Parameter Name:alt-server-record</t>
+
+              <t>CBOR Key Value: 34</t>
+
+              <t>CBOR Major Type: 4</t>
+
+              <t>Change Controller: IESG</t>
+
+              <t>Specification Document(s): this document</t>
+            </list><list style="symbols">
+              <t>Parameter Name:addr</t>
+
+              <t>CBOR Key Value: 35</t>
+
+              <t>CBOR Major Type: 2</t>
+
+              <t>Change Controller: IESG</t>
+
+              <t>Specification Document(s): this document</t>
+            </list><list style="symbols">
+              <t>Parameter Name:ttl</t>
+
+              <t>CBOR Key Value: 36</t>
+
+              <t>CBOR Major Type: 0</t>
 
               <t>Change Controller: IESG</t>
 
