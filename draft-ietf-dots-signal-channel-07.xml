@@ -1146,7 +1146,7 @@ A1                                      # map(1)
           messages SHOULD indicate that mitigation is active but terminating.
           The initial active-but-terminating period SHOULD be sufficiently
           long to absorb latency incurred by route propagation. The
-          active-but-terminating period SHOULD be set by default to 60
+          active-but-terminating period SHOULD be set by default to 120
           seconds. If the client requests mitigation again before the initial
           active-but-terminating period elapses, the DOTS server MAY
           exponentially increase the active-but- terminating period up to a
@@ -1155,7 +1155,7 @@ A1                                      # map(1)
           terminated, as the DOTS client is no longer responsible for the
           mitigation. For example, if there is a financial relationship
           between the DOTS client and server domains, the DOTS client ceases
-          incurring cost at this point. </t>
+          incurring cost at this point.</t>
         </section>
 
         <section anchor="get" title="Retrieving a DOTS Signal">

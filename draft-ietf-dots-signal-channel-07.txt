@@ -1333,7 +1333,7 @@ Internet-Draft             DOTS Signal Channel              October 2017
    that mitigation is active but terminating.  The initial active-but-
    terminating period SHOULD be sufficiently long to absorb latency
    incurred by route propagation.  The active-but-terminating period
-   SHOULD be set by default to 60 seconds.  If the client requests
+   SHOULD be set by default to 120 seconds.  If the client requests
    mitigation again before the initial active-but-terminating period
    elapses, the DOTS server MAY exponentially increase the active-but-
    terminating period up to a maximum of 300 seconds (5 minutes).  After
