@@ -924,12 +924,12 @@ module ietf-dots-signal-config {
           specification, the cryptographic hash algorithm used is SHA-256
           <xref target="RFC6234"></xref>. The output of the cryptographic hash
           algorithm is truncated to 16 bytes; truncation is done by stripping
-          off the final 16 bytes. The truncated output is base64 encoded. If
-          the 'client-identifier' value is already present in the mitigation
-          request received from the DOTS client, the DOTS gateway computes the
-          'client-identifier' value, as discussed above, and adds the computed
-          'client-identifier' value to the end of the 'client-identifier'
-          list. The DOTS server MUST NOT use the
+          off the final 16 bytes. The truncated output is base64url encoded.
+          If the 'client-identifier' value is already present in the
+          mitigation request received from the DOTS client, the DOTS gateway
+          computes the 'client-identifier' value, as discussed above, and adds
+          the computed 'client-identifier' value to the end of the
+          'client-identifier' list. The DOTS server MUST NOT use the
           &lsquo;client-identifier&rsquo; for the DOTS client authentication
           process.</t>
 
@@ -975,7 +975,7 @@ module ietf-dots-signal-config {
   {
     "mitigation-scope": {
       "client-identifier": [
-         "dz6pHjaADkaFTbjr0JGBpw=="
+         "dz6pHjaADkaFTbjr0JGBpw"
       ],
       "scope": [
         {
@@ -1010,8 +1010,8 @@ A1                                      # map(1)
    A2                                   # map(2)
       18 20                             # unsigned(32)
       81                                # array(1)
-      78 18                             # text(24)
-         647A3670486A6141446B614654626A72304A474270773D3D # "dz6pHjaADkaFTbjr0JGBpw=="
+      76                                # text(22)
+         647A3670486A6141446B614654626A72304A47427077 # "dz6pHjaADkaFTbjr0JGBpw"
       02                                # unsigned(2)
       81                                # array(1)
          A4                             # map(4)
