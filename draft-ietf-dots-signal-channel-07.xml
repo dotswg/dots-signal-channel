@@ -927,8 +927,8 @@ module ietf-dots-signal-config {
           off the final 16 bytes. The truncated output is base64url encoded.
           If the 'client-identifier' value is already present in the
           mitigation request received from the DOTS client, the DOTS gateway
-          computes the 'client-identifier' value, as discussed above, and adds
-          the computed 'client-identifier' value to the end of the
+          MAY compute the 'client-identifier' value, as discussed above, and
+          add the computed 'client-identifier' value to the end of the
           'client-identifier' list. The DOTS server MUST NOT use the
           &lsquo;client-identifier&rsquo; for the DOTS client authentication
           process.</t>
