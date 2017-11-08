@@ -917,7 +917,7 @@ module ietf-dots-signal-config {
           <t>If the DOTS client is using the certificate provisioned by the
           Enrollment over Secure Transport (EST) server <xref
           target="RFC6234"></xref> in the DOTS gateway-domain to authenticate
-          itself to the DOTS gateway, then the 'client-identifier' value will
+          itself to the DOTS gateway, then the 'client-identifier' value can
           be the output of a cryptographic hash algorithm whose input is the
           DER-encoded ASN.1 representation of the Subject Public Key Info
           (SPKI) of an X.509 certificate. In this version of the
@@ -1975,9 +1975,9 @@ A1                                      # map(1)
 
             <t>If the DOTS server does not receive any traffic from the peer
             DOTS client, then the DOTS server sends heartbeat requests to the
-            DOTS client and if &ldquo;trigger-mitigation&rdquo; is set to
-            &ldquo;false&rdquo;, then trigger DDoS mitigation after maximum
-            "missing-hb-allowed" threshold is reached.</t>
+            DOTS client and after maximum "missing-hb-allowed" threshold is
+            reached, the DOTS server concludes the session is
+            disconnected.</t>
           </list></t>
 
         <t>In DOTS over UDP, heartbeat messages may be exchanged between the
