@@ -2071,7 +2071,7 @@ A1                                      # map(1)
       authentication, DOTS client MUST verify the entire certification path
       per <xref target="RFC5280"></xref>. The DOTS client additionaly uses
       <xref target="RFC6125"></xref> validation techniques to compare the
-      domain name to the certificate provisioned.</t>
+      domain name to the certificate provided.</t>
 
       <t>A key challenge to deploying DOTS is provisioning DOTS clients,
       including the distribution of keying material to DOTS clients to make
