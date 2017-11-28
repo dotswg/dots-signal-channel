@@ -1077,6 +1077,10 @@ A1                                      # map(1)
 
             <c>DOTS client has withdrawn the mitigation request and the
             mitigation is active but terminating.</c>
+
+            <c>6</c>
+
+            <c>The mitigation is now terminated.</c>
           </texttable>
 
           <t>The observe option defined in <xref target="RFC7641"></xref>
