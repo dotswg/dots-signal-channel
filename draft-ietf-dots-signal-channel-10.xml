@@ -1,0 +1,3030 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!DOCTYPE rfc SYSTEM "rfc2629.dtd">
+<?rfc toc="yes"?>
+<?rfc tocompact="yes"?>
+<?rfc tocdepth="3"?>
+<?rfc tocindent="yes"?>
+<?rfc symrefs="yes"?>
+<?rfc sortrefs="yes"?>
+<?rfc comments="yes"?>
+<?rfc inline="yes"?>
+<?rfc compact="yes"?>
+<?rfc subcompact="no"?>
+<rfc category="std" docName="draft-ietf-dots-signal-channel-10"
+     ipr="trust200902">
+  <front>
+    <title abbrev="DOTS Signal Channel">Distributed Denial-of-Service Open
+    Threat Signaling (DOTS) Signal Channel</title>
+
+    <author fullname="Tirumaleswar Reddy" initials="T." surname="Reddy">
+      <organization abbrev="McAfee">McAfee, Inc.</organization>
+
+      <address>
+        <postal>
+          <street>Embassy Golf Link Business Park</street>
+
+          <city>Bangalore</city>
+
+          <region>Karnataka</region>
+
+          <code>560071</code>
+
+          <country>India</country>
+        </postal>
+
+        <email>kondtir@gmail.com</email>
+      </address>
+    </author>
+
+    <author fullname="Mohamed Boucadair" initials="M." surname="Boucadair">
+      <organization>Orange</organization>
+
+      <address>
+        <postal>
+          <street></street>
+
+          <city>Rennes</city>
+
+          <region></region>
+
+          <code>35000</code>
+
+          <country>France</country>
+        </postal>
+
+        <email>mohamed.boucadair@orange.com</email>
+      </address>
+    </author>
+
+    <author fullname="Prashanth Patil" initials="P." surname="Patil">
+      <organization abbrev="Cisco">Cisco Systems, Inc.</organization>
+
+      <address>
+        <postal>
+          <street></street>
+
+          <street></street>
+
+          <city></city>
+
+          <country></country>
+        </postal>
+
+        <email>praspati@cisco.com</email>
+      </address>
+    </author>
+
+    <author fullname="Andrew Mortensen" initials="A." surname="Mortensen">
+      <organization>Arbor Networks, Inc.</organization>
+
+      <address>
+        <postal>
+          <street>2727 S. State St</street>
+
+          <city>Ann Arbor, MI</city>
+
+          <region></region>
+
+          <code>48104</code>
+
+          <country>United States</country>
+        </postal>
+
+        <email>amortensen@arbor.net</email>
+      </address>
+    </author>
+
+    <author fullname="Nik Teague" initials="N." surname="Teague">
+      <organization>Verisign, Inc.</organization>
+
+      <address>
+        <postal>
+          <street></street>
+
+          <city></city>
+
+          <region></region>
+
+          <code></code>
+
+          <country>United States</country>
+        </postal>
+
+        <email>nteague@verisign.com</email>
+      </address>
+    </author>
+
+    <date />
+
+    <workgroup>DOTS</workgroup>
+
+    <keyword>security</keyword>
+
+    <keyword>mitigation</keyword>
+
+    <keyword>service delivery</keyword>
+
+    <keyword>connectivity</keyword>
+
+    <keyword>anti-DDoS</keyword>
+
+    <keyword>automation</keyword>
+
+    <keyword>cooperation</keyword>
+
+    <abstract>
+      <t>This document specifies the DOTS signal channel, a protocol for
+      signaling the need for protection against Distributed Denial-of-Service
+      (DDoS) attacks to a server capable of enabling network traffic
+      mitigation on behalf of the requesting client.</t>
+
+      <t>A companion document defines the DOTS data channel, a separate
+      reliable communication layer for DOTS management and configuration.</t>
+    </abstract>
+
+    <note title="Editorial Note (To be removed by RFC Editor)">
+      <t>Please update these statements with the RFC number to be assigned to
+      this document:<list style="symbols">
+          <t>"This version of this YANG module is part of RFC XXXX;"</t>
+
+          <t>"RFC XXXX: Distributed Denial-of-Service Open Threat Signaling
+          (DOTS) Signal Channel";</t>
+
+          <t>"| 3.00 | Alternate server | [RFCXXXX] |"</t>
+
+          <t>reference: RFC XXXX</t>
+        </list></t>
+    </note>
+  </front>
+
+  <middle>
+    <section anchor="introduction" title="Introduction">
+      <t>A distributed denial-of-service (DDoS) attack is an attempt to make
+      machines or network resources unavailable to their intended users. In
+      most cases, sufficient scale can be achieved by compromising enough
+      end-hosts and using those infected hosts to perpetrate and amplify the
+      attack. The victim in this attack can be an application server, a host,
+      a router, a firewall, or an entire network.</t>
+
+      <t>Network applications have finite resources like CPU cycles, number of
+      processes or threads they can create and use, maximum number of
+      simultaneous connections it can handle, limited resources of the control
+      plane, etc. When processing network traffic, such applications are
+      supposed to use these resources to offer the intended task in the most
+      efficient fashion. However, a DDoS attacker may be able to prevent an
+      application from performing its intended task by causing the application
+      to exhaust the finite supply of a specific resource.</t>
+
+      <t>TCP DDoS SYN-flood, for example, is a memory-exhaustion attack on the
+      victim and ACK-flood is a CPU exhaustion attack on the victim <xref
+      target="RFC4987"></xref>. Attacks on the link are carried out by sending
+      enough traffic such that the link becomes excessively congested, and
+      legitimate traffic suffers high packet loss. Stateful firewalls can also
+      be attacked by sending traffic that causes the firewall to hold
+      excessive state. The firewall then runs out of memory, and can no longer
+      instantiate the state required to pass legitimate flows. Other possible
+      DDoS attacks are discussed in <xref target="RFC4732"></xref>.</t>
+
+      <t>In many cases, it may not be possible for network administrators to
+      determine the causes of an attack, but instead just realize that certain
+      resources seem to be under attack. This document defines a lightweight
+      protocol permitting a DOTS client to request mitigation from one or more
+      DOTS servers for protection against detected, suspected, or anticipated
+      attacks. This protocol enables cooperation between DOTS agents to permit
+      a highly-automated network defense that is robust, reliable and
+      secure.</t>
+
+      <t>An example of network diagram showing a deployment of DOTS agents is
+      shown in <xref target="fig1"></xref>. In this example, the DOTS server
+      is operating on the access network.</t>
+
+      <t><figure anchor="fig1" title="Sample DOTS Deployment (1)">
+          <artwork align="center"><![CDATA[   
+   Network                                           
+   Resource         CPE router            Access network     __________      
+ +-----------+    +--------------+       +-------------+    /          \   
+ |           |____|              |_______|             |___ | Internet |
+ |DOTS client|    | DOTS gateway |       | DOTS server |    |          |
+ |           |    |              |       |             |    |          |
+ +-----------+    +--------------+       +-------------+    \__________/]]></artwork>
+        </figure></t>
+
+      <t>The DOTS server can also be running on the Internet, as depicted in
+      <xref target="fig_blah"></xref>.</t>
+
+      <t><figure anchor="fig_blah" title="Sample DOTS Deployment (2)">
+          <artwork align="center"><![CDATA[   
+  Network                                               DDoS mitigation  
+  Resource        CPE router             __________         service
+ +-----------+    +-------------+       /          \    +-------------+
+ |           |____|             |_______|          |___ |             |
+ |DOTS client|    |DOTS gateway |       | Internet |    | DOTS server |
+ |           |    |             |       |          |    |             |
+ +-----------+    +-------------+       \__________/    +-------------+
+]]></artwork>
+        </figure>In typical deployments, the DOTS client belongs to a
+      different administrative domain than the DOTS server. For example, the
+      DOTS client is a firewall protecting services owned and operated by an
+      domain, while the DOTS server is owned and operated by a different
+      domain providing DDoS mitigation services. That domain providing DDoS
+      mitigation service might, or might not, also provide Internet access
+      service to the website operator.</t>
+
+      <t>The DOTS server may (not) be co-located with the DOTS mitigator. In
+      typical deployments, the DOTS server belongs to the same administrative
+      domain as the mitigator. The DOTS client can communicate directly with
+      the DOTS server or indirectly via a DOTS gateway.</t>
+
+      <t>The document adheres to the DOTS architecture <xref
+      target="I-D.ietf-dots-architecture"></xref>. The requirements for DOTS
+      signal channel protocol are obtained from <xref
+      target="I-D.ietf-dots-requirements"></xref>. This document satisfies all
+      the use cases discussed in <xref
+      target="I-D.ietf-dots-use-cases"></xref>.</t>
+
+      <t>This document focuses on the DOTS signal channel. This is a companion
+      document to the DOTS data channel specification <xref
+      target="I-D.ietf-dots-data-channel"></xref> that defines a configuration
+      and bulk data exchange mechanism supporting the DOTS signal channel.</t>
+    </section>
+
+    <section anchor="notation" title="Notational Conventions and Terminology">
+      <t>The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+      "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
+      "OPTIONAL" in this document are to be interpreted as described in <xref
+      target="RFC2119"></xref>.</t>
+
+      <t>(D)TLS: For brevity this term is used for statements that apply to
+      both Transport Layer Security <xref target="RFC5246"></xref> and
+      Datagram Transport Layer Security <xref target="RFC6347"></xref>.
+      Specific terms will be used for any statement that applies to either
+      protocol alone.</t>
+
+      <t>The reader should be familiar with the terms defined in <xref
+      target="I-D.ietf-dots-architecture"></xref>.</t>
+
+      <t>The meaning of the symbols in YANG tree diagrams is defined in <xref
+      target="I-D.ietf-netmod-yang-tree-diagrams"></xref>.</t>
+    </section>
+
+    <section title="Design Overview">
+      <t>The DOTS signal channel is built on top of the Constrained
+      Application Protocol (CoAP) <xref target="RFC7252"></xref>, a
+      lightweight protocol originally designed for constrained devices and
+      networks. CoAP&rsquo;s expectation of packet loss, support for
+      asynchronous non-confirmable messaging, congestion control, small
+      message overhead limiting the need for fragmentation, use of minimal
+      resources, and support for (D)TLS make it a good foundation on which to
+      build the DOTS signaling mechanism.</t>
+
+      <t>The DOTS signal channel is layered on existing standards (<xref
+      target="fig_dots"></xref>).</t>
+
+      <t><figure anchor="fig_dots"
+          title="Abstract Layering of DOTS signal channel over CoAP over (D)TLS">
+          <artwork align="center"><![CDATA[          +--------------+
+          |     DOTS     |
+          +--------------+
+          |     CoAP     |
+          +--------------+
+          | TLS  | DTLS  |
+          +--------------+
+          | TCP  |  UDP  |
+          +--------------+
+          |      IP      |
+          +--------------+
+]]></artwork>
+        </figure></t>
+
+      <t>By default, DOTS signal channel MUST run over port number TBD as
+      defined in <xref target="port"></xref>, for both UDP and TCP, unless the
+      DOTS server has mutual agreement with its DOTS clients to use a port
+      other than TBD for DOTS signal channel, or DOTS clients supports means
+      to dynamically discover the ports used by their DOTS servers. In order
+      to use a distinct port number (vs. TBD), DOTS clients and servers should
+      support a configurable parameter to supply the port number to use.</t>
+
+      <t>The signal channel is initiated by the DOTS client (<xref
+      target="m_req"></xref>). Once the signal channel is established, the
+      DOTS agents periodically send heartbeats to keep the channel active
+      (<xref target="hb"></xref>). At any time, the DOTS client may send a
+      mitigation request message to a DOTS server over the active channel.
+      While mitigation is active, due to the higher likelihood of packet loss
+      during a DDoS attack, the DOTS server periodically sends status messages
+      to the client, including basic mitigation feedback details. Mitigation
+      remains active until the DOTS client explicitly terminates mitigation,
+      or the mitigation lifetime expires.</t>
+
+      <t>DOTS signaling can happen with DTLS <xref target="RFC6347"></xref>
+      over UDP and TLS <xref target="RFC5246"></xref> over TCP. Likewise,
+      requests may be sent using IPv4 or IPv6 transfer capabilities. A Happy
+      Eyeballs procedure for DOTS signal channel is specified in <xref
+      target="HE"></xref>.</t>
+
+      <t>Messages exchanged between DOTS clients and servers are serialized
+      using Concise Binary Object Representation (CBOR) <xref
+      target="RFC7049"></xref>, CBOR is a binary encoding designed for small
+      code and message size. CBOR encoded payloads are used to convey signal
+      channel specific payload messages that convey request parameters and
+      response information such as errors. This specification uses the
+      encoding rules defined in <xref target="I-D.ietf-core-yang-cbor"></xref>
+      for representing mitigation scope and DOTS signal channel session
+      configuration data defined using YANG (<xref target="YANG"></xref>) as
+      CBOR data.</t>
+
+      <t>In order to prevent fragmentation, DOTS agents must follow the
+      recommendations in Section 4.6 of <xref target="RFC7252"></xref>. Refer
+      to <xref target="mtu"></xref> for more details.</t>
+
+      <t>DOTS agents MUST support GET, PUT, and DELETE CoAP methods. The
+      payload included in CoAP responses with 2.xx and 3.xx Response Codes
+      MUST be of content type "application/cbor" (Section 5.5.1 of <xref
+      target="RFC7252"></xref>). CoAP responses with 4.xx and 5.xx error
+      Response Codes MUST include a diagnostic payload (Section 5.5.2 of <xref
+      target="RFC7252"></xref>). The Diagnostic Payload may contain additional
+      information to aid troubleshooting.</t>
+    </section>
+
+    <section title="DOTS Signal Channel: Messages &amp; Behaviors">
+      <section title="DOTS Server(s) Discovery">
+        <t>This document assumes that DOTS clients are provisioned with the
+        reachability information of their DOTS server(s) using a variety of
+        means (e.g., local configuration, or dynamic means such as DHCP).
+        These means are out of scope of this document.</t>
+
+        <t>Likewise, it is out of scope of this document to specify the
+        behavior to follow by a DOTS client to place its requests (e.g.,
+        contact all servers, select one server among the list) when multiple
+        DOTS servers are provisioned.</t>
+      </section>
+
+      <section title="CoAP URIs">
+        <t>The DOTS server MUST support the use of the path-prefix of "/.well-
+        known/" as defined in <xref target="RFC5785"></xref> and the
+        registered name of "dots". Each DOTS operation is indicated by a
+        path-suffix that indicates the intended operation.</t>
+
+        <texttable align="center" anchor="uris" style="all"
+                   title="Operations and their corresponding URIs">
+          <ttcol>Operation</ttcol>
+
+          <ttcol>Operation path</ttcol>
+
+          <ttcol>Details</ttcol>
+
+          <c>Mitigation</c>
+
+          <c>/v1/mitigate</c>
+
+          <c><xref target="m_req"></xref></c>
+
+          <c>Session configuration</c>
+
+          <c>/v1/config</c>
+
+          <c><xref target="sigconfig"></xref></c>
+        </texttable>
+
+        <t></t>
+      </section>
+
+      <section anchor="HE" title="Happy Eyeballs for DOTS Signal Channel">
+        <t>DOTS signaling can happen with DTLS over UDP and TLS over TCP. A
+        DOTS client can use DNS to determine the IP address(es) of a DOTS
+        server or a DOTS client may be provided with the list of DOTS server
+        IP addresses. The DOTS client MUST know a DOTS server's domain name;
+        hard-coding the domain name of the DOTS server into software is NOT
+        RECOMMENDED in case the domain name is not valid or needs to change
+        for legal or other reasons. The DOTS client performs A and/or AAAA
+        record lookup of the domain name and the result will be a list of IP
+        addresses, each of which can be used to contact the DOTS server using
+        UDP and TCP.</t>
+
+        <t>If an IPv4 path to reach a DOTS server is found, but the DOTS
+        server's IPv6 path is not working, a dual-stack DOTS client can
+        experience a significant connection delay compared to an IPv4-only
+        DOTS client. The other problem is that if a middlebox between the DOTS
+        client and DOTS server is configured to block UDP, the DOTS client
+        will fail to establish a DTLS session with the DOTS server and will,
+        then, have to fall back to TLS over TCP incurring significant
+        connection delays. <xref target="I-D.ietf-dots-requirements"></xref>
+        discusses that DOTS client and server will have to support both
+        connectionless and connection-oriented protocols.</t>
+
+        <t>To overcome these connection setup problems, the DOTS client can
+        try connecting to the DOTS server using both IPv6 and IPv4, and try
+        both DTLS over UDP and TLS over TCP in a fashion similar to the Happy
+        Eyeballs mechanism <xref target="RFC6555"></xref>. These connection
+        attempts are performed by the DOTS client when its initializes, and
+        the client uses that information for its subsequent alert to the DOTS
+        server. In order of preference (most preferred first), it is UDP over
+        IPv6, UDP over IPv4, TCP over IPv6, and finally TCP over IPv4, which
+        adheres to <xref target="RFC6724">address preference order</xref> and
+        the DOTS preference that UDP be used over TCP (to avoid TCP's head of
+        line blocking).</t>
+
+        <t><figure anchor="fig_happy_eyeballs" title="DOTS Happy Eyeballs">
+            <artwork align="center"><![CDATA[
+DOTS client                                               DOTS server
+   |                                                         |
+   |--DTLS ClientHello, IPv6 ---->X                          |
+   |--TCP SYN, IPv6-------------->X                          |
+   |--DTLS ClientHello, IPv4 ---->X                          |
+   |--TCP SYN, IPv4----------------------------------------->|
+   |--DTLS ClientHello, IPv6 ---->X                          |    
+   |--TCP SYN, IPv6-------------->X                          |
+   |<-TCP SYNACK---------------------------------------------|
+   |--DTLS ClientHello, IPv4 ---->X                          |
+   |--TCP ACK----------------------------------------------->|
+   |<------------Establish TLS Session---------------------->|
+   |----------------DOTS signal----------------------------->|
+   |                                                         |
+]]></artwork>
+          </figure></t>
+
+        <t>In reference to <xref target="fig_happy_eyeballs"></xref>, the DOTS
+        client sends two TCP SYNs and two DTLS ClientHello messages at the
+        same time over IPv6 and IPv4. In this example, it is assumed that the
+        IPv6 path is broken and UDP is dropped by a middlebox but has little
+        impact to the DOTS client because there is no long delay before using
+        IPv4 and TCP. The DOTS client repeats the mechanism to discover if
+        DOTS signaling with DTLS over UDP becomes available from the DOTS
+        server, so the DOTS client can migrate the DOTS signal channel from
+        TCP to UDP, but such probing SHOULD NOT be done more frequently than
+        every 24 hours and MUST NOT be done more frequently than every 5
+        minutes.</t>
+      </section>
+
+      <section anchor="m_req" title="DOTS Mitigation Methods">
+        <t>The following methods are used by a DOTS client to request,
+        withdraw, or retrieve the status of mitigation requests:<list
+            style="hanging">
+            <t hangText="PUT:">DOTS clients use the PUT method to request
+            mitigation from a DOTS server (<xref target="post"></xref>).
+            During active mitigation, DOTS clients may use PUT requests to
+            convey mitigation efficacy updates to the DOTS server (<xref
+            target="put"></xref>).</t>
+
+            <t hangText="DELETE:">DOTS clients use the DELETE method to
+            withdraw a request for mitigation from the DOTS server (<xref
+            target="del"></xref>).</t>
+
+            <t hangText="GET:">DOTS clients may use the GET method to
+            subscribe to DOTS server status messages, or to retrieve the list
+            of existing mitigations (<xref target="get"></xref>).</t>
+          </list></t>
+
+        <t>Mitigation request and response messages are marked as
+        Non-confirmable messages. DOTS agents SHOULD follow the data
+        transmission guidelines discussed in Section 3.1.3 of <xref
+        target="RFC8085"></xref> and control transmission behavior by not
+        sending on average more than one UDP datagram per RTT to the peer DOTS
+        agent.</t>
+
+        <t>Requests marked by the DOTS client as Non-confirmable messages are
+        sent at regular intervals until a response is received from the DOTS
+        server. If the DOTS client cannot maintain an RTT estimate, it SHOULD
+        NOT send more than one Non-confirmable request every 3 seconds, and
+        SHOULD use an even less aggressive rate when possible (case 2 in
+        Section 3.1.3 of <xref target="RFC8085"></xref>).</t>
+
+        <section anchor="post" title="Request Mitigation">
+          <t>When a DOTS client requires mitigation for any reason, the DOTS
+          client uses CoAP PUT method to send a mitigation request to the DOTS
+          server(s) (<xref target="Figure1"></xref>, illustrated in JSON
+          diagnostic notation). If this DOTS client is entitled to solicit the
+          DOTS service, the DOTS server can enable mitigation on behalf of the
+          DOTS client by communicating the DOTS client's request to the
+          mitigator and relaying selected mitigator feedback to the requesting
+          DOTS client.</t>
+
+          <t><figure anchor="Figure1" title="PUT to convey DOTS signals">
+              <artwork align="left"><![CDATA[  Header: PUT (Code=0.03)
+  Uri-Host: "host" 
+  Uri-Path: ".well-known"
+  Uri-Path: "dots"
+  Uri-Path: "version"
+  Uri-Path: "mitigate"
+  Content-Type: "application/cbor"
+  {
+    "mitigation-scope": {
+      "client-identifier": [
+         "string"
+      ],
+      "scope": [
+        {
+          "mitigation-id": integer,  
+          "target-ip": [
+             "string"
+           ],
+          "target-prefix": [
+             "string"
+           ],
+          "target-port-range": [
+             {
+               "lower-port": integer,
+               "upper-port": integer
+             }
+           ],     
+           "target-protocol": [
+             integer
+           ],
+           "fqdn": [
+             "string"
+           ],
+           "uri": [
+             "string"
+           ],
+           "alias-name": [
+             "string"
+           ],
+          "lifetime": integer
+        }
+      ]
+    }
+  }
+]]></artwork>
+            </figure></t>
+
+          <t>The parameters are described below:</t>
+
+          <t><list style="hanging">
+              <t hangText="client-identifier:">The client identifier MAY be
+              conveyed by the DOTS gateway to propagate the DOTS client
+              identity from the gateway's client-side to the gateway's
+              server-side, and from the gateway's server-side to the DOTS
+              server. This allows the final DOTS server to accept mitigation
+              requests with scopes which the DOTS client is authorized to
+              manage. <vspace blankLines="1" />The 'client-identifier' value
+              MUST be assigned by the DOTS gateway in a manner that ensures
+              that there is no probability that the same value will be
+              assigned to a different DOTS client. The DOTS gateway MUST
+              obscure potentially sensitive DOTS client identity information.
+              The client-identifier attribute SHOULD NOT to be generated and
+              included by the DOTS client. <vspace blankLines="1" />This is an
+              optional attribute.</t>
+
+              <t hangText="mitigation-id:">Identifier for the mitigation
+              request represented using an integer. This identifier MUST be
+              unique for each mitigation request bound to the DOTS client,
+              i.e., the mitigation-id parameter value in the mitigation
+              request needs to be unique relative to the mitigation-id
+              parameter values of active mitigation requests conveyed from the
+              DOTS client to the DOTS server. This identifier MUST be
+              generated by the DOTS client. This document does not make any
+              assumption about how this identifier is generated. This is a
+              mandatory attribute.</t>
+
+              <t hangText="target-ip:">A list of IP addresses under attack.
+              This is an optional attribute.</t>
+
+              <t hangText="target-prefix:">A list of prefixes under attack.
+              Prefixes are represented using CIDR notation <xref
+              target="RFC4632"></xref>. This is an optional attribute.</t>
+
+              <t hangText="target-port-range:">A list of ports under attack.
+              The port range, lower-port for lower port number and upper-port
+              for upper port number. When only lower-port is present, it
+              represents a single port. For TCP, UDP, Stream Control
+              Transmission Protocol (SCTP) <xref target="RFC4960"></xref>, or
+              Datagram Congestion Control Protocol (DCCP) <xref
+              target="RFC4340"></xref>: the range of ports (e.g., 1024-65535).
+              This is an optional attribute.</t>
+
+              <t hangText="target-protocol:">A list of protocols under attack.
+              Values are taken from the IANA protocol registry <xref
+              target="proto_numbers"></xref>. The value 0 has a special
+              meaning for 'all protocols'. This is an optional attribute.</t>
+
+              <t hangText="fqdn: ">A list of Fully Qualified Domain Names.
+              Fully Qualified Domain Name (FQDN) is the full name of a system,
+              rather than just its hostname. For example, "venera" is a
+              hostname, and "venera.isi.edu" is an FQDN. This is an optional
+              attribute.</t>
+
+              <t hangText="uri: ">A list of Uniform Resource Identifiers
+              (URI). This is an optional attribute.</t>
+
+              <t hangText="alias-name:">A list of aliases. Aliases can be
+              created using the DOTS data channel (Section 3.1.1 of <xref
+              target="I-D.ietf-dots-data-channel"></xref>) or direct
+              configuration, or other means and then used in subsequent signal
+              channel exchanges to refer more efficiently to the resources
+              under attack. This is an optional attribute.</t>
+
+              <t hangText="lifetime: ">Lifetime of the mitigation request in
+              seconds. The RECOMMENDED lifetime of a mitigation request is
+              3600 seconds (60 minutes) -- this value was chosen to be long
+              enough so that refreshing is not typically a burden on the DOTS
+              client, while expiring the request where the client has
+              unexpectedly quit in a timely manner. <vspace blankLines="1" />A
+              lifetime of negative one (-1) indicates indefinite lifetime for
+              the mitigation request. A lifetime of 0 in the request is an
+              invalid value.<vspace blankLines="1" />DOTS clients MUST include
+              this parameter in their mitigation requests. Upon the expiry of
+              this lifetime, and if the request is not refreshed, the
+              mitigation request is removed. The request can be refreshed by
+              sending the same request again. The server MAY refuse indefinite
+              lifetime, for policy reasons; the granted lifetime value is
+              returned in the response. DOTS clients MUST be prepared to not
+              be granted mitigations with indefinite lifetimes. The server
+              MUST always indicate the actual lifetime in the response and the
+              remaining lifetime in status messages sent to the client. This
+              is a mandatory attribute.</t>
+            </list></t>
+
+          <t>The CBOR key values for the parameters are defined in <xref
+          target="mapping"></xref>. <xref target="IANA"></xref> defines how
+          the CBOR key values can be allocated to standards bodies and
+          vendors.</t>
+
+          <t>FQDN and URI mitigation scopes may be thought of as a form of
+          scope alias, in which the addresses to which the domain name or URI
+          resolve represent the full scope of the mitigation.</t>
+
+          <t>In the PUT request at least one of the attributes 'target-ip' or
+          'target-prefix' or 'fqdn' or 'uri 'or 'alias-name' MUST be present.
+          If the attribute value is empty, then the attribute MUST NOT be
+          present in the request. DOTS agents can safely ignore
+          Vendor-Specific parameters they don't understand.</t>
+
+          <t>The relative order of two mitigation requests from a DOTS client
+          is determined by comparing their respective 'mitigation-id' values.
+          If two mitigation requests have overlapping mitigation scopes, the
+          mitigation request with higher numeric 'mitigation-id' value will
+          override the mitigation request with a lower numeric 'mitigation-id'
+          value. Two mitigation-ids from a DOTS client are overlapping if
+          there is a common IP address, IP prefix, FQDN, URI, or alias-name.
+          To avoid maintaining a long list of overlapping mitigation requests
+          from a DOTS client and avoid error-prone provisioning of mitigation
+          requests from a DOTS client, the overlapped lower numeric
+          'mitigation-id' MUST be automatically deleted and no longer
+          available at the DOTS server.</t>
+
+          <t>The Uri-Path option carries a major and minor version
+          nomenclature to manage versioning and DOTS signal channel in this
+          specification uses v1 major version.</t>
+
+          <t>If the DOTS client is using the certificate provisioned by the
+          Enrollment over Secure Transport (EST) server <xref
+          target="RFC7030"></xref> in the DOTS gateway-domain to authenticate
+          itself to the DOTS gateway, then the 'client-identifier' value can
+          be the output of a cryptographic hash algorithm whose input is the
+          DER-encoded ASN.1 representation of the Subject Public Key Info
+          (SPKI) of an X.509 certificate. In this version of the
+          specification, the cryptographic hash algorithm used is SHA-256
+          <xref target="RFC6234"></xref>. The output of the cryptographic hash
+          algorithm is truncated to 16 bytes; truncation is done by stripping
+          off the final 16 bytes. The truncated output is base64url encoded.
+          If the 'client-identifier' value is already present in the
+          mitigation request received from the DOTS client, the DOTS gateway
+          MAY compute the 'client-identifier' value, as discussed above, and
+          add the computed 'client-identifier' value to the end of the
+          'client-identifier' list. The DOTS server MUST NOT use the
+          &lsquo;client-identifier&rsquo; for the DOTS client authentication
+          process.</t>
+
+          <t>In both DOTS signal and data channel sessions, the DOTS client
+          MUST authenticate itself to the DOTS server (<xref
+          target="mutauth"></xref>). The DOTS server may use the algorithm in
+          Section 7 of <xref target="RFC7589"></xref> to derive the DOTS
+          client identity or username from the client certificate. The DOTS
+          client identity allows the DOTS server to accept mitigation requests
+          with scopes which the DOTS client is authorized to manage. The DOTS
+          server couples the DOTS signal and data channel sessions using the
+          DOTS client identity and the 'client-identifier' parameter value, so
+          the DOTS server can validate whether the aliases conveyed in the
+          mitigation request were indeed created by the same DOTS client using
+          the DOTS data channel session. If the aliases were not created by
+          the DOTS client, the DOTS server returns 4.00 (Bad Request) in the
+          response.</t>
+
+          <t>The DOTS server couples the DOTS signal channel sessions using
+          the DOTS client identity and the 'client-identifier' parameter
+          value, and the DOTS server uses 'mitigation-id' parameter value to
+          detect duplicate mitigation requests. If the mitigation request
+          contains both alias-name and other parameters identifying the target
+          resources (such as, 'target-ip', 'target-prefix',
+          'target-port-range', 'fqdn', or 'uri'), then the DOTS server appends
+          the parameter values in 'alias-name' with the corresponding
+          parameter values in 'target-ip', 'target-prefix',
+          'target-port-range', 'fqdn', or 'uri'.</t>
+
+          <t><xref target="Figure2"></xref> shows a PUT request example to
+          signal that ports 80, 8080, and 443 on the servers 2001:db8:6401::1
+          and 2001:db8:6401::2 are being attacked (illustrated in JSON
+          diagnostic notation).</t>
+
+          <t><figure anchor="Figure2" title="PUT for DOTS signal">
+              <artwork align="left"><![CDATA[  Header: PUT (Code=0.03)
+  Uri-Host: "www.example.com" 
+  Uri-Path: ".well-known"
+  Uri-Path: "dots"
+  Uri-Path: "v1"
+  Uri-Path: "mitigate"
+  Content-Format: "application/cbor"
+  {
+    "mitigation-scope": {
+      "client-identifier": [
+         "dz6pHjaADkaFTbjr0JGBpw"
+      ],
+      "scope": [
+        {
+          "mitigation-id": 12332,  
+          "target-ip": [
+             "2001:db8:6401::1",
+             "2001:db8:6401::2"
+           ],
+          "target-port-range": [
+            { 
+              "lower-port": 80
+            },
+            { 
+              "lower-port": 443 
+            },
+            { 
+               "lower-port": 8080
+            }
+           ],     
+           "target-protocol": [
+             6
+           ]
+        }
+      ]
+    }
+  }
+
+The CBOR encoding format is shown below:
+
+A1                                      # map(1)
+   01                                   # unsigned(1)
+   A2                                   # map(2)
+      18 20                             # unsigned(32)
+      81                                # array(1)
+      76                                # text(22)
+         647A3670486A6141446B614654626A72304A47427077 # "dz6pHjaADkaFTbjr0JGBpw"
+      02                                # unsigned(2)
+      81                                # array(1)
+         A4                             # map(4)
+            03                          # unsigned(3)
+            19 302C                     # unsigned(12332)
+            04                          # unsigned(4)
+            82                          # array(2)
+               70                       # text(16)
+                  323030313A6462383A363430313A3A31 # "2001:db8:6401::1"
+               70                       # text(16)
+                  323030313A6462383A363430313A3A32 # "2001:db8:6401::2"
+            05                          # unsigned(5)
+            83                          # array(3)
+               A1                       # map(1)
+                  06                    # unsigned(6)
+                  18 50                 # unsigned(80)
+               A1                       # map(1)
+                  06                    # unsigned(6)
+                  19 01BB               # unsigned(443)
+               A1                       # map(1)
+                  06                    # unsigned(6)
+                  19 1F90               # unsigned(8080)
+            08                          # unsigned(8)
+            81                          # array(1)
+               06                       # unsigned(6)
+
+]]></artwork>
+            </figure></t>
+
+          <t>The DOTS server indicates the result of processing the PUT
+          request using CoAP response codes. CoAP 2.xx codes are success. CoAP
+          4.xx codes are some sort of invalid requests (client errors). COAP
+          5.xx codes are returned if the DOTS server has erred or is currently
+          unavailable to provide mitigation in response to the mitigation
+          request from the DOTS client.</t>
+
+          <t><xref target="put_response"></xref> shows an example of a PUT
+          request that is successfully processed (i.e., CoAP 2.xx response
+          codes).</t>
+
+          <t><figure anchor="put_response" title="2.xx response body">
+              <artwork align="left"><![CDATA[{
+  "mitigation-scope": {
+     "client-identifier": [
+         "string"
+     ],
+     "scope": [
+        {
+          "mitigation-id": integer,
+          "lifetime": integer
+        }
+      ]
+   }
+}
+]]></artwork>
+            </figure></t>
+
+          <t>If the DOTS server does not find the 'mitigation-id' parameter
+          value conveyed in the PUT request in its configuration data, then
+          the server MAY accept the mitigation request by sending back a 2.01
+          (Created) response to the DOTS client; the DOTS server will
+          consequently try to mitigate the attack.</t>
+
+          <t>If the DOTS server finds the 'mitigation-id' parameter value
+          conveyed in the PUT request in its configuration data, then the
+          server MAY update the mitigation request, and a 2.04 (Changed)
+          response is returned to indicate a successful update of the
+          mitigation request.</t>
+
+          <t>If the request is missing one or more mandatory attributes, then
+          4.00 (Bad Request) will be returned in the response or if the
+          request contains invalid or unknown parameters then 4.02 (Invalid
+          query) is returned in the response.</t>
+
+          <t>For a mitigation request to continue beyond the initial
+          negotiated lifetime, the DOTS client need to refresh the current
+          mitigation request by sending a new PUT request. The PUT request
+          MUST use the same 'mitigation-id' value, and MUST repeat all the
+          other parameters as sent in the original mitigation request apart
+          from a possible change to the lifetime parameter value.</t>
+
+          <t>A DOTS gateway MUST update the &lsquo;client-identifier&rsquo;
+          list in the response to remove the 'client-identifier' value it had
+          added in the corresponding request before forwarding the response to
+          the DOTS client.</t>
+        </section>
+
+        <section anchor="del" title="Withdraw a Mitigation">
+          <t>A DELETE request is used to withdraw a DOTS mitigation request
+          from a DOTS server (<xref target="Figure3"></xref>).</t>
+
+          <figure anchor="Figure3" title="Withdraw DOTS signal">
+            <artwork align="left"><![CDATA[  Header: DELETE (Code=0.04)
+  Uri-Host: "host" 
+  Uri-Path: ".well-known"
+  Uri-Path: "dots"
+  Uri-Path: "version"
+  Uri-Path: "mitigate"
+  Content-Format: "application/cbor"
+  {
+    "mitigation-scope": {
+      "client-identifier": [
+         "string"
+      ],
+      "scope": [
+        {
+          "mitigation-id": integer
+        }
+      ] 
+    }     
+  }
+]]></artwork>
+          </figure>
+
+          <t></t>
+
+          <t>The DOTS server immediately acknowledges a DOTS client's request
+          to withdraw the DOTS signal using 2.02 (Deleted) response code with
+          no response payload. A 2.02 (Deleted) Response Code is returned even
+          if the 'mitigation-id' parameter value conveyed in the DELETE
+          request does not exist in its configuration data before the
+          request.</t>
+
+          <t>If the DOTS server finds the 'mitigation-id' parameter value
+          conveyed in the DELETE request in its configuration data, then to
+          protect against route or DNS flapping caused by a client rapidly
+          toggling mitigation, and to dampen the effect of oscillating
+          attacks, DOTS servers MAY allow mitigation to continue for a limited
+          period after acknowledging a DOTS client's withdrawal of a
+          mitigation request. During this period, the DOTS server status
+          messages SHOULD indicate that mitigation is active but terminating.
+          The initial active-but-terminating period SHOULD be sufficiently
+          long to absorb latency incurred by route propagation. The
+          active-but-terminating period SHOULD be set by default to 120
+          seconds. If the client requests mitigation again before the initial
+          active-but-terminating period elapses, the DOTS server MAY
+          exponentially increase the active-but- terminating period up to a
+          maximum of 300 seconds (5 minutes). After the active-but-terminating
+          period elapses, the DOTS server MUST treat the mitigation as
+          terminated, as the DOTS client is no longer responsible for the
+          mitigation. For example, if there is a financial relationship
+          between the DOTS client and server domains, the DOTS client ceases
+          incurring cost at this point.</t>
+        </section>
+
+        <section anchor="get"
+                 title="Retrieve Information Related to a Mitigation">
+          <t>A GET request is used to retrieve information (including status)
+          of a DOTS mitigation from a DOTS server (<xref
+          target="Figure4"></xref>). If the DOTS server does not find the
+          'mitigation-id' parameter value conveyed in the GET request in its
+          configuration data, then it responds with a 4.04 (Not Found) error
+          response code. The 'c' (content) parameter and its permitted values
+          defined in <xref target="I-D.ietf-core-comi"></xref> can be used to
+          retrieve non-configuration data (attack mitigation status) or
+          configuration data or both. The DOTS server SHOULD support this
+          optional filtering capability but can safely ignore it if not
+          supported.</t>
+
+          <t>The examples depicted in <xref target="Figure4"></xref> assume
+          the default of "c=a".</t>
+
+          <figure anchor="Figure4" title="GET to retrieve the rules">
+            <artwork align="left"><![CDATA[1) To retrieve all DOTS signals signaled by the DOTS client.
+  
+  Header: GET (Code=0.01)
+  Uri-Host: "host" 
+  Uri-Path: ".well-known"
+  Uri-Path: "dots"
+  Uri-Path: "version"
+  Uri-Path: "mitigate"
+  Observe : 0
+  {
+    "mitigation-scope": {
+      "client-identifier": [
+         "string"
+      ]
+    }     
+  }
+
+2) To retrieve a specific DOTS signal signaled by the DOTS client.
+   The configuration data in the response will be formatted in the 
+   same order it was processed at the DOTS server.
+  
+  Header: GET (Code=0.01)
+  Uri-Host: "host" 
+  Uri-Path: ".well-known"
+  Uri-Path: "dots"
+  Uri-Path: "version"
+  Uri-Path: "mitigate"
+  Observe : 0
+  Content-Format: "application/cbor"
+  {
+    "mitigation-scope": {
+      "client-identifier": [
+         "string"
+      ],
+      "scope": [
+        {
+          "mitigation-id": integer
+        }
+      ] 
+    }     
+  }
+]]></artwork>
+          </figure>
+
+          <t><xref target="Figure5"></xref> shows a response example of all
+          the active mitigation requests associated with the DOTS client on
+          the DOTS server and the mitigation status of each mitigation
+          request.</t>
+
+          <t><figure anchor="Figure5" title="Response body">
+              <artwork align="left"><![CDATA[{
+  "mitigation-scope": {
+     "scope": [
+        {
+          "mitigation-id": 12332,  
+          "mitigation-start": 1507818434.00,
+          "target-protocol": [
+              17
+           ],
+          "lifetime":1800,
+          "status":2,
+          "bytes-dropped": 134334555,
+          "bps-dropped":  43344,
+          "pkts-dropped": 333334444,
+          "pps-dropped": 432432
+         }, 
+        {
+          "mitigation-id": 12333,  
+          "mitigation-start": 1507818393.00, 
+          "target-protocol": [
+              6
+           ],
+          "lifetime":1800,
+          "status":3
+          "bytes-dropped": 0,
+          "bps-dropped":  0,
+          "pkts-dropped": 0,
+          "pps-dropped": 0
+        }
+     ]
+  }
+ }]]></artwork>
+            </figure></t>
+
+          <t>The mitigation status parameters are described below.</t>
+
+          <t><list style="hanging">
+              <t hangText="lifetime:">The remaining lifetime of the mitigation
+              request in seconds.</t>
+
+              <t hangText="mitigation-start:">Mitigation start time is
+              represented in seconds relative to 1970-01-01T00:00Z in UTC time
+              (Section 2.4.1 of <xref target="RFC7049"></xref>). The encoding
+              is modified so that the leading tag 1 (epoch-based date/time)
+              MUST be omitted.</t>
+
+              <t hangText="bytes-dropped:">The total dropped byte count for
+              the mitigation request since the attack mitigation is triggered.
+              The count wraps around when it reaches the maximum value of
+              unsigned integer. This is an optional attribute.</t>
+
+              <t hangText="bps-dropped:">The average dropped bytes per second
+              for the mitigation request since the attack mitigation is
+              triggered. This SHOULD be a five-minute average. This is an
+              optional attribute.</t>
+
+              <t hangText="pkts-dropped:">The total dropped packet count for
+              the mitigation request since the attack mitigation is triggered.
+              This is an optional attribute.</t>
+
+              <t hangText="pps-dropped:">The average dropped packets per
+              second for the mitigation request since the attack mitigation is
+              triggered. This SHOULD be a five-minute average. This is an
+              optional attribute.</t>
+
+              <t hangText="status:">Status of attack mitigation. The 'status'
+              parameter is a mandatory attribute.</t>
+            </list></t>
+
+          <t>The various possible values of 'status' parameter are explained
+          in <xref target="status"></xref>.</t>
+
+          <texttable anchor="status" style="all"
+                     title=" Values of 'status' parameter">
+            <ttcol align="right">Parameter value</ttcol>
+
+            <ttcol align="left">Description</ttcol>
+
+            <c>1</c>
+
+            <c>Attack mitigation is in progress (e.g., changing the network
+            path to re-route the inbound traffic to DOTS mitigator).</c>
+
+            <c>2</c>
+
+            <c>Attack is successfully mitigated (e.g., traffic is redirected
+            to a DDOS mitigator and attack traffic is dropped).</c>
+
+            <c>3</c>
+
+            <c>Attack has stopped and the DOTS client can withdraw the
+            mitigation request.</c>
+
+            <c>4</c>
+
+            <c>Attack has exceeded the mitigation provider capability.</c>
+
+            <c>5</c>
+
+            <c>DOTS client has withdrawn the mitigation request and the
+            mitigation is active but terminating.</c>
+          </texttable>
+
+          <t>The observe option defined in <xref target="RFC7641"></xref>
+          extends the CoAP core protocol with a mechanism for a CoAP client to
+          "observe" a resource on a CoAP server: the client retrieves a
+          representation of the resource and requests this representation be
+          updated by the server as long as the client is interested in the
+          resource. A DOTS client conveys the observe option set to '0' in the
+          GET request to receive unsolicited notifications of attack
+          mitigation status from the DOTS server. Unidirectional notifications
+          within the bidirectional signal channel allows unsolicited message
+          delivery, enabling asynchronous notifications between the agents.
+          Due to the higher likelihood of packet loss during a DDoS attack,
+          DOTS server periodically sends attack mitigation status to the DOTS
+          client and also notifies the DOTS client whenever the status of the
+          attack mitigation changes. If the DOTS server cannot maintain a RTT
+          estimate, it SHOULD NOT send more than one unsolicited notification
+          every 3 seconds, and SHOULD use an even less aggressive rate when
+          possible (case 2 in Section 3.1.3 of <xref
+          target="RFC8085"></xref>).</t>
+
+          <t>A DOTS client that is no longer interested in receiving
+          notifications from the DOTS server can simply "forget" the
+          observation. When the DOTS server then sends the next notification,
+          the DOTS client will not recognize the token in the message and thus
+          will return a Reset message. This causes the DOTS server to remove
+          the associated entry. Alternatively, the DOTS client can explicitly
+          deregister by issuing a GET request that has the Token field set to
+          the token of the observation to be cancelled and includes an Observe
+          Option with the value set to '1' (deregister).</t>
+
+          <t><xref target="Figure6"></xref> shows an example of a DOTS client
+          requesting a DOTS server to send notifications related a given
+          mitigation request.</t>
+
+          <t><figure anchor="Figure6"
+              title="Notifications of attack mitigation status">
+              <artwork align="center"><![CDATA[
+DOTS Client                   DOTS Server
+   |                               |
+   |  GET /<mitigation-id number>  |
+   |  Token: 0x4a                  |   Registration
+   |  Observe: 0                   |
+   +------------------------------>|
+   |                               |
+   |  2.05 Content                 |
+   |  Token: 0x4a                  |   Notification of
+   |  Observe: 12                  |   the current state
+   |  status: "mitigation          |  
+   |          in progress"         |
+   |<------------------------------+
+   |  2.05 Content                 |
+   |  Token: 0x4a                  |   Notification upon
+   |  Observe: 44                  |    a state change
+   |  status: "mitigation          |  
+   |          complete"            |
+   |<------------------------------+
+   |  2.05 Content                 |
+   |  Token: 0x4a                  |   Notification upon
+   |  Observe: 60                  |   a state change
+   |  status: "attack stopped"     |  
+   |<------------------------------+
+   |                               |    ]]></artwork>
+            </figure></t>
+
+          <section title="Mitigation Status">
+            <t>The DOTS client can send the GET request at frequent intervals
+            without the Observe option to retrieve the configuration data of
+            the mitigation request and non-configuration data (i.e., the
+            attack status). The frequency of polling the DOTS server to get
+            the mitigation status should follow the transmission guidelines
+            given in Section 3.1.3 of <xref target="RFC8085"></xref>. If the
+            DOTS server has been able to mitigate the attack and the attack
+            has stopped, the DOTS server indicates as such in the status, and
+            the DOTS client recalls the mitigation request by issuing a DELETE
+            for the mitigation-id.</t>
+
+            <t>A DOTS client should react to the status of the attack from the
+            DOTS server and not the fact that it has recognized, using its own
+            means, that the attack has been mitigated. This ensures that the
+            DOTS client does not recall a mitigation request in a premature
+            fashion because it is possible that the DOTS client does not sense
+            the DDOS attack on its resources but the DOTS server could be
+            actively mitigating the attack and the attack is not completely
+            averted.</t>
+          </section>
+        </section>
+
+        <section anchor="put" title="Efficacy Update from DOTS Clients">
+          <t>While DDoS mitigation is active, due to the likelihood of packet
+          loss, a DOTS client MAY periodically transmit DOTS mitigation
+          efficacy updates to the relevant DOTS server. A PUT request (<xref
+          target="Figure7"></xref>) is used to convey the mitigation efficacy
+          update to the DOTS server.</t>
+
+          <t>The PUT request MUST include all the parameters used in the PUT
+          request to convey the DOTS signal (<xref target="post"></xref>)
+          unchanged apart from the lifetime parameter value. If this is not
+          the case, the DOTS server MUST reject the request with a 4.02 error
+          response code.</t>
+
+          <t>The If-Match Option (Section 5.10.8.1 of <xref
+          target="RFC7252"></xref>) with an empty value is used to make the
+          PUT request conditional on the current existence of the mitigation
+          request. If UDP is used as transport, CoAP requests may arrive
+          out-of-order. For example, the DOTS client may send a PUT request to
+          convey an efficacy update to the DOTS server followed by a DELETE
+          request to withdraw the mitigation request, but the DELETE request
+          arrives at the DOTS server before the PUT request. To handle
+          out-of-order delivery of requests, if an If-Match option is present
+          in the PUT request and the 'mitigation-id' in the request matches a
+          mitigation request from that DOTS client, then the request is
+          processed. If no match is found, the PUT request is silently
+          ignored.</t>
+
+          <figure anchor="Figure7" title="Efficacy Update">
+            <artwork align="left"><![CDATA[   Header: PUT (Code=0.03)
+   Uri-Host: "host" 
+   Uri-Path: ".well-known"
+   Uri-Path: "dots"
+   Uri-Path: "version"
+   Uri-Path: "mitigate"
+   Content-Format: "application/cbor"
+   If-Match: 
+   {
+    "mitigation-scope": {
+      "client-identifier": [
+         "string"
+      ],
+      "scope": [
+        {
+          "mitigation-id": integer,  
+          "target-ip": [
+             "string"
+           ],
+          "target-port-range": [
+             {
+               "lower-port": integer,
+               "upper-port": integer
+             }
+           ],     
+           "target-protocol": [
+             integer
+           ],
+           "fqdn": [
+             "string"
+           ],
+           "uri": [
+             "string"
+           ],
+           "alias-name": [
+             "string"
+           ],
+          "lifetime": integer,
+          "attack-status": integer
+        }
+      ]
+    }
+   }
+]]></artwork>
+          </figure>
+
+          <t>The 'attack-status' parameter is a mandatory attribute when doing
+          a efficacy update. The various possible values contained in the
+          'attack-status' parameter are described in <xref
+          target="astatus"></xref>.</t>
+
+          <texttable anchor="astatus" style="all"
+                     title=" Values of 'attack-status' parameter">
+            <ttcol align="right">Parameter value</ttcol>
+
+            <ttcol align="left">Description</ttcol>
+
+            <c>1</c>
+
+            <c>The DOTS client determines that it is still under attack.</c>
+
+            <c>2</c>
+
+            <c>The DOTS client determines that the attack is successfully
+            mitigated (e.g., attack traffic is not seen).</c>
+          </texttable>
+
+          <t>The DOTS server indicates the result of processing a PUT request
+          using CoAP response codes. The response code 2.04 (Changed) is
+          returned if the DOTS server has accepted the mitigation efficacy
+          update. The error response code 5.03 (Service Unavailable) is
+          returned if the DOTS server has erred or is incapable of performing
+          the mitigation.</t>
+        </section>
+      </section>
+
+      <section anchor="sigconfig"
+               title="DOTS Signal Channel Session Configuration">
+        <t>The DOTS client can negotiate, configure, and retrieve the DOTS
+        signal channel session behavior. The DOTS signal channel can be used,
+        for example, to configure the following:<list style="letters">
+            <t>Heartbeat interval: DOTS agents regularly send heartbeats (CoAP
+            Ping/Pong) to each other after mutual authentication in order to
+            keep the DOTS signal channel open, heartbeat messages are
+            exchanged between the DOTS agents every heartbeat-interval seconds
+            to detect the current status of the DOTS signal channel
+            session.</t>
+
+            <t>Missing heartbeats allowed: This variable indicates the maximum
+            number of consecutive heartbeat messages for which a DOTS agent
+            did not receive a response before concluding that the session is
+            disconnected or defunct.</t>
+
+            <t>Acceptable signal loss ratio: Maximum retransmissions,
+            retransmission timeout value and other message transmission
+            parameters for the DOTS signal channel.</t>
+          </list></t>
+
+        <t>Reliability is provided to requests and responses by marking them
+        as Confirmable (CON) messages. DOTS signal channel session
+        configuration requests and responses are marked as Confirmable (CON)
+        messages. As explained in Section 2.1 of <xref
+        target="RFC7252"></xref>, a Confirmable message is retransmitted using
+        a default timeout and exponential back-off between retransmissions,
+        until the DOTS server sends an Acknowledgement message (ACK) with the
+        same Message ID conveyed from the DOTS client. Message transmission
+        parameters are defined in Section 4.8 of <xref
+        target="RFC7252"></xref>. Reliability is provided to the responses by
+        marking them as Confirmable (CON) messages. The DOTS server can either
+        piggyback the response in the acknowledgement message or if the DOTS
+        server is not able to respond immediately to a request carried in a
+        Confirmable message, it simply responds with an Empty Acknowledgement
+        message so that the DOTS client can stop retransmitting the request.
+        Empty Acknowledgement message is explained in Section 2.2 of <xref
+        target="RFC7252"></xref>. When the response is ready, the server sends
+        it in a new Confirmable message which then in turn needs to be
+        acknowledged by the DOTS client (see Sections 5.2.1 and 5.2.2 of <xref
+        target="RFC7252"></xref>). Requests and responses exchanged between
+        DOTS agents during peacetime are marked as Confirmable messages.</t>
+
+        <t>Implementation Note: A DOTS client that receives a response in a
+        CON message may want to clean up the message state right after sending
+        the ACK. If that ACK is lost and the DOTS server retransmits the CON,
+        the DOTS client may no longer have any state to which to correlate
+        this response, making the retransmission an unexpected message; the
+        DOTS client will send a Reset message so it does not receive any more
+        retransmissions. This behavior is normal and not an indication of an
+        error (see Section 5.3.2 of <xref target="RFC7252"></xref> for more
+        details).</t>
+
+        <section anchor="discovery" title="Discover Configuration Parameters">
+          <t>A GET request is used to obtain acceptable and current
+          configuration parameters on the DOTS server for DOTS signal channel
+          session configuration. <xref target="Figure18"></xref> shows how to
+          obtain acceptable configuration parameters for the DOTS server.</t>
+
+          <figure anchor="Figure18" title="GET to retrieve configuration">
+            <artwork align="left"><![CDATA[  Header: GET (Code=0.01)
+  Uri-Host: "host" 
+  Uri-Path: ".well-known"
+  Uri-Path: "dots"
+  Uri-Path: "version"
+  Uri-Path: "config"
+]]></artwork>
+          </figure>
+
+          <t></t>
+
+          <t>The DOTS server in the 2.05 (Content) response conveys the
+          current, minimum and maximum attribute values acceptable by the DOTS
+          server.</t>
+
+          <t><figure anchor="Figure19" title="GET response body">
+              <artwork align="left"><![CDATA[  Content-Format: "application/cbor"
+   {
+     "heartbeat-interval": {
+                            "CurrentValue": integer,
+                            "MinValue": integer, 
+                            "MaxValue" : integer, 
+                           },
+     "missing-hb-allowed": {
+                            "CurrentValue": integer,
+                            "MinValue": integer, 
+                            "MaxValue" : integer, 
+                           },
+     "max-retransmit":     {
+                            "CurrentValue": integer,
+                            "MinValue": integer, 
+                            "MaxValue" : integer, 
+                           },
+     "ack-timeout":        {
+                            "CurrentValue": integer,
+                            "MinValue": integer, 
+                            "MaxValue" : integer, 
+                           },
+     "ack-random-factor":  {
+                            "CurrentValue": number,
+                            "MinValue": number, 
+                            "MaxValue" : number, 
+                           },
+     "trigger-mitigation": {
+                            "CurrentValue": boolean,
+                           }
+    }
+]]></artwork>
+            </figure></t>
+
+          <t><xref target="Figure17"></xref> shows an example of acceptable
+          and current configuration parameters on the DOTS server for DOTS
+          signal channel session configuration.</t>
+
+          <t><figure anchor="Figure17" title="Configuration response body">
+              <artwork align="left"><![CDATA[  Content-Format: "application/cbor"
+  {
+    "heartbeat-interval": {
+                            "CurrentValue": 30,
+                            "MinValue": 15, 
+                            "MaxValue" : 240, 
+                           },
+     "missing-hb-allowed": {
+                            "CurrentValue": 5,
+                            "MinValue": 3, 
+                            "MaxValue" : 9, 
+                           },
+     "max-retransmit":     {
+                            "CurrentValue": 3,
+                            "MinValue": 2, 
+                            "MaxValue" : 15, 
+                           },
+     "ack-timeout":        {
+                            "CurrentValue": 2,
+                            "MinValue": 1, 
+                            "MaxValue" : 30, 
+                           },
+     "ack-random-factor": {
+                            "CurrentValue": 1.5,
+                            "MinValue": 1.1, 
+                            "MaxValue" : 4.0, 
+                           },
+     "trigger-mitigation": {
+                            "CurrentValue": true,
+                           }
+  }
+]]></artwork>
+            </figure></t>
+        </section>
+
+        <section title="Convey DOTS Signal Channel Session Configuration">
+          <t>A PUT request is used to convey the configuration parameters for
+          the signal channel (e.g., heartbeat interval, maximum
+          retransmissions). Message transmission parameters for CoAP are
+          defined in Section 4.8 of <xref target="RFC7252"></xref>. The
+          RECOMMENDED values of transmission parameter values are ack_timeout
+          (2 seconds), max-retransmit (3), ack-random-factor (1.5). In
+          addition to those parameters, the RECOMMENDED specific DOTS
+          transmission parameter values are heartbeat-interval (30 seconds)
+          and missing-hb-allowed (5).<list style="empty">
+              <t>Note: heartbeat-interval should be tweaked to also assist
+              DOTS messages for NAT traversal (SIG-010 of <xref
+              target="I-D.ietf-dots-requirements"></xref>). According to <xref
+              target="RFC8085"></xref>, keepalive messages must not be sent
+              more frequently than once every 15 seconds and should use longer
+              intervals when possible. Furthermore, <xref
+              target="RFC4787"></xref> recommends NATs to use a state timeout
+              of 2 minutes or longer, but experience shows that sending
+              packets every 15 to 30 seconds is necessary to prevent the
+              majority of middleboxes from losing state for UDP flows. From
+              that standpoint, this specification recommends a minimum
+              heartbeat-interval of 15 seconds and a maximum
+              heartbeat-interval of 240 seconds. The recommended value of 30
+              seconds is selected to anticipate the expiry of NAT state.</t>
+
+              <t>A heartbeat-interval of 30 second may be seen as too chatty
+              in some deployments. For such deployments, DOTS agents may
+              negotiate longer heartbeat-interval values to avoid overloading
+              the network with too frequent keepalives.</t>
+            </list></t>
+
+          <t>When a confirmable "CoAP ping" is sent, and if there is no
+          response, the "CoAP ping" will get retransmitted max-retransmit
+          number of times by the CoAP layer using an initial timeout set to a
+          random duration between ack_timeout and
+          (ack-timeout*ack-random-factor) and exponential back-off between
+          retransmissions. By choosing the recommended transmission
+          parameters, the "CoAP ping" will timeout after 45 seconds. If the
+          DOTS agent does not receive any response from the peer DOTS agent
+          for missing-hb-allowed number of consecutive "CoAP ping" confirmable
+          messages, then it concludes that the DOTS signal channel session is
+          disconnected. A DOTS client MUST NOT transmit a "CoAP ping" while
+          waiting for the previous "CoAP ping" response from the same DOTS
+          server.</t>
+
+          <t>If the DOTS agent wishes to change the default values of message
+          transmission parameters, then it should follow the guidance given in
+          Section 4.8.1 of <xref target="RFC7252"></xref>. The DOTS agents
+          MUST use the negotiated values for message transmission parameters
+          and default values for non-negotiated message transmission
+          parameters.</t>
+
+          <t>The signal channel session configuration is applicable to a
+          single DOTS signal channel session between the DOTS agents.</t>
+
+          <t><figure anchor="Figure13"
+              title="PUT to convey the DOTS signal channel session configuration data.">
+              <artwork align="left"><![CDATA[  Header: PUT (Code=0.03)
+  Uri-Host: "host" 
+  Uri-Path: ".well-known"
+  Uri-Path: "dots"
+  Uri-Path: "version"
+  Uri-Path: "config"
+  Content-Format: "application/cbor"
+  {
+   "signal-config": {
+     "session-id": integer,
+     "heartbeat-interval": integer,
+     "missing-hb-allowed": integer,
+     "max-retransmit": integer,
+     "ack-timeout": integer,
+     "ack-random-factor": number
+     "trigger-mitigation": boolean
+   }
+  }
+]]></artwork>
+            </figure></t>
+
+          <t>The parameters are described below:</t>
+
+          <t><list style="hanging">
+              <t hangText="session-id:">Identifier for the DOTS signal channel
+              session configuration data represented as an integer. This
+              identifier MUST be generated by the DOTS client. This document
+              does not make any assumption about how this identifier is
+              generated. This is a mandatory attribute.</t>
+
+              <t hangText="heartbeat-interval: ">Time interval in seconds
+              between two consecutive heartbeat messages. This is an optional
+              attribute.</t>
+
+              <t hangText="missing-hb-allowed: ">Maximum number of consecutive
+              heartbeat messages for which the DOTS agent did not receive a
+              response before concluding that the session is disconnected.
+              This is an optional attribute.</t>
+
+              <t hangText="max-retransmit: ">Maximum number of retransmissions
+              for a message (referred to as MAX_RETRANSMIT parameter in CoAP).
+              This is an optional attribute.</t>
+
+              <t hangText="ack-timeout: ">Timeout value in seconds used to
+              calculate the initial retransmission timeout value (referred to
+              as ACK_TIMEOUT parameter in CoAP). This is an optional
+              attribute.</t>
+
+              <t hangText="ack-random-factor: ">Random factor used to
+              influence the timing of retransmissions (referred to as
+              ACK_RANDOM_FACTOR parameter in CoAP). This is an optional
+              attribute.</t>
+
+              <t hangText="trigger-mitigation: ">If the parameter value is set
+              to 'false', then DDoS mitigation is triggered only when the DOTS
+              signal channel session is lost. Automated mitigation on loss of
+              signal is discussed in Section 3.3.3 of <xref
+              target="I-D.ietf-dots-architecture"></xref>. If the DOTS client
+              ceases to respond to heartbeat messages, then the DOTS server
+              can detect that the DOTS session is lost. The default value of
+              the parameter is 'true'. This is an optional attribute.</t>
+            </list></t>
+
+          <t>In the PUT request at least one of the attributes
+          heartbeat-interval, missing-hb-allowed, max-retransmit, ack-timeout,
+          ack-random-factor, and trigger-mitigation MUST be present. The PUT
+          request with higher numeric session-id value over-rides the DOTS
+          signal channel session configuration data installed by a PUT request
+          with a lower numeric session-id value.</t>
+
+          <t><xref target="Figure14"></xref> shows a PUT request example to
+          convey the configuration parameters for the DOTS signal channel.</t>
+
+          <t><figure anchor="Figure14"
+              title="PUT to convey the configuration parameters">
+              <artwork align="left"><![CDATA[  Header: PUT (Code=0.03)
+  Uri-Host: "www.example.com" 
+  Uri-Path: ".well-known"
+  Uri-Path: "dots"
+  Uri-Path: "v1"
+  Uri-Path: "config"
+  Content-Format: "application/cbor"
+  {
+    "signal-config": {
+     "session-id": 1234534333242,
+     "heartbeat-interval": 91,
+     "missing-hb-allowed": 3, 
+     "max-retransmit": 7,
+     "ack-timeout": 5,
+     "ack-random-factor": 1.5,
+     "trigger-mitigation": false
+    } 
+  }
+]]></artwork>
+            </figure></t>
+
+          <t>The DOTS server indicates the result of processing the PUT
+          request using CoAP response codes:<list style="symbols">
+              <t>If the DOTS server finds the 'session-id' parameter value
+              conveyed in the PUT request in its configuration data and if the
+              DOTS server has accepted the updated configuration parameters,
+              then 2.04 (Changed) code is returned in the response.</t>
+
+              <t>If the DOTS server does not find the 'session-id' parameter
+              value conveyed in the PUT request in its configuration data and
+              if the DOTS server has accepted the configuration parameters,
+              then a response code 2.01 (Created) is returned in the
+              response.</t>
+
+              <t>If the request is missing one or more mandatory attributes,
+              then 4.00 (Bad Request) is returned in the response.</t>
+
+              <t>If the request contains one or more invalid or unknown
+              parameters, then 4.02 (Invalid query) code is returned in the
+              response.</t>
+
+              <t>Response code 4.22 (Unprocessable Entity) is returned in the
+              response, if any of the heartbeat-interval, missing-hb-allowed,
+              max-retransmit, target-protocol, ack-timeout, and
+              ack-random-factor attribute values are not acceptable to the
+              DOTS server. Upon receipt of the 4.22 error response code, the
+              DOTS client should request the maximum and minimum attribute
+              values acceptable to the DOTS server (<xref
+              target="discovery"></xref>). The DOTS client may re-try and send
+              the PUT request with updated attribute values acceptable to the
+              DOTS server.</t>
+            </list></t>
+        </section>
+
+        <section title="Delete DOTS Signal Channel Session Configuration">
+          <t>A DELETE request is used to delete the installed DOTS signal
+          channel session configuration data (<xref
+          target="Figure15"></xref>).</t>
+
+          <figure anchor="Figure15" title="DELETE configuration">
+            <artwork align="left"><![CDATA[  Header: DELETE (Code=0.04)
+  Uri-Host: "host" 
+  Uri-Path: ".well-known"
+  Uri-Path: "dots"
+  Uri-Path: "version"
+  Uri-Path: "config"
+  Content-Format: "application/cbor"
+]]></artwork>
+          </figure>
+
+          <t>The DOTS server resets the DOTS signal channel session
+          configuration back to the default values and acknowledges a DOTS
+          client's request to remove the DOTS signal channel session
+          configuration using 2.02 (Deleted) response code.</t>
+        </section>
+      </section>
+
+      <section title="Redirected Signaling">
+        <t>Redirected DOTS signaling is discussed in detail in Section 3.2.2
+        of <xref target="I-D.ietf-dots-architecture"></xref>.</t>
+
+        <t>If a DOTS server wants to redirect a DOTS client to an alternative
+        DOTS server for a signal session, then the response code 3.00
+        (alternate server) will be returned in the response to the client. The
+        DOTS server can return the error response code 3.00 in response to a
+        PUT request from the DOTS client or convey the error response code
+        3.00 in a unidirectional notification response from the DOTS
+        server.</t>
+
+        <t>The DOTS server in the error response conveys the alternate DOTS
+        server FQDN, and the alternate DOTS server IP addresses and time to
+        live values in the CBOR body.</t>
+
+        <figure anchor="Figure20" title="Error response body">
+          <artwork align="left"><![CDATA[{ 
+    "alt-server": "string",
+    "alt-server-record": [
+      {
+        "addr": "string",   
+        "ttl" : integer,                    
+      }
+    ]
+}]]></artwork>
+        </figure>
+
+        <t>The parameters are described below:</t>
+
+        <t><list style="hanging">
+            <t hangText="alt-server:">FQDN of an alternate DOTS server.</t>
+
+            <t hangText="addr:">IP address of an alternate DOTS server.</t>
+
+            <t hangText="ttl:">Time to live (TTL) represented as an integer
+            number of seconds.</t>
+          </list><xref target="Figure21"></xref> shows a 3.00 response example
+        to convey the DOTS alternate server www.example-alt.com, its IP
+        addresses 2001:db8:6401::1 and 2001:db8:6401::2, and TTL values 3600
+        and 1800.</t>
+
+        <t><figure anchor="Figure21" title="Example of error response body">
+            <artwork align="left"><![CDATA[{
+ 
+    "alt-server": "www.example-alt.com",
+    "alt-server-record": [
+      {
+        "ttl" :  3600,        
+        "addr": "2001:db8:6401::1"         
+      },
+      {
+        "ttl" :  1800,        
+        "addr": "2001:db8:6401::2"         
+      }
+    ]
+}]]></artwork>
+          </figure></t>
+
+        <t>When the DOTS client receives 3.00 response, it considers the
+        current request as having failed, but SHOULD try the request with the
+        alternate DOTS server. During a DDOS attack, the DNS server may be
+        subjected to DDOS attack, alternate DOTS server IP addresses conveyed
+        in the 3.00 response help the DOTS client to skip DNS lookup of the
+        alternate DOTS server and can try to establish UDP or TCP session with
+        the alternate DOTS server IP addresses. The DOTS client SHOULD
+        implement DNS64 function to handle the scenario where IPv6-only DOTS
+        client communicates with IPv4-only alternate DOTS server.</t>
+      </section>
+
+      <section anchor="hb" title="Heartbeat Mechanism">
+        <t>To provide a metric of signal health and distinguish an 'idle'
+        signal channel from a 'disconnected' or 'defunct' session, the DOTS
+        agent sends a heartbeat over the signal channel to maintain its half
+        of the channel. The DOTS agent similarly expects a heartbeat from its
+        peer DOTS agent, and may consider a session terminated in the extended
+        absence of a peer agent heartbeat.</t>
+
+        <t>While the communication between the DOTS agents is quiescent, the
+        DOTS client will probe the DOTS server to ensure it has maintained
+        cryptographic state and vice versa. Such probes can also keep alive
+        firewall and/or NAT bindings. This probing reduces the frequency of
+        establishing a new handshake when a DOTS signal needs to be conveyed
+        to the DOTS server.</t>
+
+        <t>In case of a volumetric DDoS attack saturating the incoming link to
+        the DOTS client, all traffic from the DOTS server to the DOTS client
+        will likely be dropped, although the DOTS server receives heartbeat
+        requests and DOTS messages from the DOTS client. In this scenario, the
+        DOTS agents MUST behave differently to handle message transmission and
+        DOTS session liveliness during link saturation:</t>
+
+        <t><list style="symbols">
+            <t>The DOTS client MUST NOT consider the DOTS session terminated
+            even after maximum "missing-hb-allowed" threshold is reached. The
+            DOTS client SHOULD continue to use the current DOTS session, and
+            send heartbeat requests over the current DOTS session, so the DOTS
+            server knows the DOTS client has not disconnected the DOTS
+            session. After the maximum "missing-hb-allowed" threshold is
+            reached, the DOTS client SHOULD try (D)TLS session resumption. The
+            DOTS client SHOULD send mitigation requests over the current DOTS
+            session, and in parallel, try (D)TLS session resumption or 0-RTT
+            mode in DTLS 1.3 to piggyback the mitigation request in the
+            ClientHello message. Once the link is no longer statured, if
+            traffic from the DOTS server reaches the DOTS client over the
+            current DOTS session, the DOTS client can stop (D)TLS session
+            resumption or if (D)TLS session resumption is successful then
+            disconnect the current DOTS session.</t>
+
+            <t>If the DOTS server does not receive any traffic from the peer
+            DOTS client, then the DOTS server sends heartbeat requests to the
+            DOTS client and after maximum "missing-hb-allowed" threshold is
+            reached, the DOTS server concludes the session is
+            disconnected.</t>
+          </list></t>
+
+        <t>In DOTS over UDP, heartbeat messages may be exchanged between the
+        DOTS agents using the &ldquo;COAP ping&rdquo; mechanism defined in
+        Section 4.2 of <xref target="RFC7252"></xref>. Concretely, the DOTS
+        agent sends an Empty Confirmable message and the peer DOTS agent will
+        respond by sending an Reset message.</t>
+
+        <t>In DOTS over TCP, heartbeat messages can be exchanged between the
+        DOTS agents using the Ping and Pong messages specified in Section 4.4
+        of <xref target="I-D.ietf-core-coap-tcp-tls"></xref>. That is, the
+        DOTS agent sends a Ping message and the peer DOTS agent would respond
+        by sending a single Pong message.</t>
+      </section>
+    </section>
+
+    <section anchor="YANG" title="DOTS Signal Channel YANG Modules">
+      <t>This document defines YANG <xref target="RFC7950"></xref> modules for
+      mitigation scope and DOTS signal channel session configuration data.</t>
+
+      <section title="Mitigation Request YANG Module Tree Structure">
+        <t>This document defines the YANG module "ietf-dots-signal" (<xref
+        target="yrequest"></xref>), which has the following tree
+        structure:<figure>
+            <artwork><![CDATA[module: ietf-dots-signal
+    +--rw mitigation-scope
+       +--rw client-identifier*   binary
+       +--rw scope* [mitigation-id]
+          +--rw mitigation-id        int32
+          +--rw target-ip*           inet:ip-address
+          +--rw target-prefix*       inet:ip-prefix
+          +--rw target-port-range* [lower-port upper-port]
+          |  +--rw lower-port    inet:port-number
+          |  +--rw upper-port    inet:port-number
+          +--rw target-protocol*     uint8
+          +--rw fqdn*                inet:domain-name
+          +--rw uri*                 inet:uri
+          +--rw alias-name*          string
+          +--rw lifetime?            int32
+]]></artwork>
+          </figure></t>
+      </section>
+
+      <section anchor="yrequest" title="Mitigation Request YANG Module ">
+        <t><figure>
+            <artwork><![CDATA[<CODE BEGINS> file "ietf-dots-signal@2017-11-27.yang"
+
+module ietf-dots-signal {
+      yang-version 1.1;
+      namespace "urn:ietf:params:xml:ns:yang:ietf-dots-signal";
+      prefix "signal";
+
+      import ietf-inet-types {
+          prefix "inet";
+      }
+
+    organization "IETF DOTS Working Group";
+
+    contact
+      "Konda, Tirumaleswar Reddy <TirumaleswarReddy_Konda@McAfee.com>
+       Mohamed Boucadair <mohamed.boucadair@orange.com>
+       Prashanth Patil <praspati@cisco.com>
+       Andrew Mortensen <amortensen@arbor.net>
+       Nik Teague <nteague@verisign.com>";
+
+     description
+       "This module contains YANG definition for DOTS
+        signal sent by the DOTS client to the DOTS server.
+
+        Copyright (c) 2017 IETF Trust and the persons identified as
+        authors of the code.  All rights reserved.
+
+        Redistribution and use in source and binary forms, with or
+        without modification, is permitted pursuant to, and subject
+        to the license terms contained in, the Simplified BSD License
+        set forth in Section 4.c of the IETF Trust's Legal Provisions
+        Relating to IETF Documents
+        (http://trustee.ietf.org/license-info).
+
+        This version of this YANG module is part of RFC XXXX; see
+        the RFC itself for full legal notices.";
+
+     revision 2017-11-27 {
+       description
+         "Initial revision.";
+       reference
+         "RFC XXXX: A Distributed Denial-of-Service Open Threat 
+                    Signaling (DOTS) Signal Channel";
+     }
+
+     container mitigation-scope {
+          description 
+             "Specifies the scope of the mitigation request.";
+          
+          leaf-list client-identifier {
+             type binary; 
+             description             
+               "The client identifier may be conveyed by 
+                the DOTS gateway to propagate the DOTS client
+                identity from the gateway's client-side to the
+                gateway's server-side, and from the gateway's
+                server-side to the DOTS server. 
+
+                It allows the final DOTS server to accept
+                mitigation requests with scopes which the DOTS
+                client is authorized to manage.";
+          }
+
+          list scope {
+             key mitigation-id;
+             description 
+               "The scope of the request.";
+
+             leaf mitigation-id {
+                type int32;
+                description 
+                  "Mitigation request identifier. 
+           
+                  This identifier must be unique for each mitigation
+                  request bound to the DOTS client.";
+              }
+
+              leaf-list target-ip {
+                  type inet:ip-address;
+                  description 
+                    "IPv4 or IPv6 address identifying the target.";
+              }
+
+              leaf-list target-prefix {
+                  type inet:ip-prefix;
+                  description 
+                    "IPv4 or IPv6 prefix identifying the target.";
+              }
+
+              list target-port-range {
+                  key "lower-port upper-port";
+
+                  description 
+                    "Port range. When only lower-port is  
+                     present, it represents a single port.";
+
+                  leaf lower-port {
+                     type inet:port-number;
+                     mandatory true; 
+                     description "Lower port number.";
+                  }
+
+                  leaf upper-port {
+                     type inet:port-number;
+                       must ". >= ../lower-port" {
+                         error-message
+                           "The upper port number must be greater than  
+                            or equal to lower port number.";
+                       }
+                     description "Upper port number.";
+                  }
+              }
+
+              leaf-list target-protocol {
+                  type uint8;
+                  description 
+                    "Identifies the target protocol number.
+
+                     The value '0' means 'all protocols'.
+               
+                     Values are taken from the IANA protocol registry:
+                     https://www.iana.org/assignments/protocol-numbers/
+                     protocol-numbers.xhtml
+
+                     For example, 6 for a TCP or 17 for UDP.";
+              }
+
+              leaf-list fqdn {
+                   type inet:domain-name;
+                   description "FQDN";
+              }
+
+              leaf-list uri {
+                  type inet:uri;
+                  description "URI";
+              }
+
+              leaf-list alias-name {
+                  type string;
+                  description "alias name";
+              }
+
+              leaf lifetime {
+                  type int32;
+                  units "seconds";
+                  default 3600;
+                  description 
+                    "Indicates the lifetime of the mitigation request.";
+              }
+          } 
+     }
+  }
+<CODE ENDS>]]></artwork>
+          </figure></t>
+      </section>
+
+      <section title="Session Configuration YANG Module Tree Structure">
+        <t>This document defines the YANG module "ietf-dots-signal-config"
+        (<xref target="config"></xref>), which has the following
+        structure:<figure>
+            <artwork><![CDATA[module: ietf-dots-signal-config
+    +--rw signal-config
+       +--rw session-id?           int32
+       +--rw heartbeat-interval?   int16
+       +--rw missing-hb-allowed?   int16
+       +--rw max-retransmit?       int16
+       +--rw ack-timeout?          int16
+       +--rw ack-random-factor?    decimal64
+       +--rw trigger-mitigation?   boolean]]></artwork>
+          </figure></t>
+      </section>
+
+      <section anchor="config" title="Session Configuration YANG Module ">
+        <t><figure>
+            <artwork><![CDATA[<CODE BEGINS> file "ietf-dots-signal-config@2017-11-27.yang"
+
+module ietf-dots-signal-config {
+     yang-version 1.1;
+     namespace "urn:ietf:params:xml:ns:yang:ietf-dots-signal-config";
+     prefix "config";
+
+    organization "IETF DOTS Working Group";
+
+    contact 
+      "Konda, Tirumaleswar Reddy <TirumaleswarReddy_Konda@McAfee.com>
+       Mohamed Boucadair <mohamed.boucadair@orange.com>
+       Prashanth Patil <praspati@cisco.com>
+       Andrew Mortensen <amortensen@arbor.net>
+       Nik Teague <nteague@verisign.com>";
+
+     description
+       "This module contains YANG definition for DOTS
+        signal channel session configuration.
+
+        Copyright (c) 2017 IETF Trust and the persons identified as
+        authors of the code.  All rights reserved.
+
+        Redistribution and use in source and binary forms, with or
+        without modification, is permitted pursuant to, and subject
+        to the license terms contained in, the Simplified BSD License
+        set forth in Section 4.c of the IETF Trust's Legal Provisions
+        Relating to IETF Documents
+        (http://trustee.ietf.org/license-info).
+
+        This version of this YANG module is part of RFC XXXX; see
+        the RFC itself for full legal notices.";
+
+     revision 2017-11-27 {
+       description
+         "Initial revision.";
+       reference
+         "RFC XXXX: A Distributed Denial-of-Service Open Threat 
+                    Signaling (DOTS) Signal Channel";
+     }
+
+     container signal-config {
+          description 
+            "DOTS signal channel session configuration.";
+
+          leaf session-id {
+              type int32;
+              description 
+                "An identifier for the DOTS signal channel 
+                 session configuration data.";
+          }
+
+          leaf heartbeat-interval {
+              type int16;
+              units "seconds";
+              default 30;
+              description 
+                "DOTS agents regularly send heartbeats to each other 
+                 after mutual authentication in order to keep
+                 the DOTS signal channel open.";
+          }
+
+          leaf missing-hb-allowed {
+              type int16;
+              default 5;
+              description 
+                "Maximum number of missing heartbeats allowed.";
+          }
+
+          leaf max-retransmit {
+              type int16;
+              default 3;
+              description 
+                "Maximum number of retransmissions of a 
+                 Confirmable message.";
+          }
+
+          leaf ack-timeout {
+              type int16;
+              units "seconds";
+              default 2;
+              description 
+                 "Initial retransmission timeout value.";
+          }
+
+          leaf ack-random-factor {
+              type decimal64 {
+                fraction-digits 2;
+              }
+             default 1.5;
+             description 
+               "Random factor used to influence the timing of
+                retransmissions.";
+         }
+         leaf trigger-mitigation {
+             type boolean;
+             default true;
+             description 
+               "If false, then mitigation is triggered 
+                only when the DOTS server channel session is lost";
+         }
+      }
+}
+<CODE ENDS>]]></artwork>
+          </figure></t>
+      </section>
+    </section>
+
+    <section anchor="mapping" title="Mapping Parameters to CBOR">
+      <t>All parameters in the payload in the DOTS signal channel MUST be
+      mapped to CBOR types as shown in Table 4 and are given an integer key to
+      save space. The recipient of the payload MAY reject the information if
+      it is not suitably mapped.</t>
+
+      <t><figure>
+          <artwork align="left"><![CDATA[/--------------------+---------------------+--------------------------\
+| Parameter name     | CBOR key            | CBOR major type of value |
++--------------------+---------------------+--------------------------+
+| mitigation-scope   | 1                   | 5 (map)                  |
+| scope              | 2                   | 5 (map)                  |
+| mitigation-id      | 3                   | 0 (unsigned)             |
+| target-ip          | 4                   | 4 (array)                |
+| target-port-range  | 5                   | 4                        |
+| lower-port         | 6                   | 0                        |
+| upper-port         | 7                   | 0                        |
+| target-protocol    | 8                   | 4                        |
+| fqdn               | 9                   | 4                        |
+| uri                | 10                  | 4                        |
+| alias-name         | 11                  | 4                        |
+| lifetime           | 12                  | 0                        |
+| attack-status      | 13                  | 0                        |
+| signal-config      | 14                  | 5                        |
+| heartbeat-interval | 15                  | 0                        |
+| max-retransmit     | 16                  | 0                        |
+| ack-timeout        | 17                  | 0                        |
+| ack-random-factor  | 18                  | 7                        |
+| MinValue           | 19                  | 0                        |
+| MaxValue           | 20                  | 0                        |
+| status             | 21                  | 0                        |
+| bytes-dropped      | 22                  | 0                        |
+| bps-dropped        | 23                  | 0                        |
+| pkts-dropped       | 24                  | 0                        |
+| pps-dropped        | 25                  | 0                        |
+| session-id         | 26                  | 0                        |
+| trigger-mitigation | 27                  | 7 (simple types)         |
+| missing-hb-allowed | 28                  | 0                        |
+| CurrentValue       | 29                  | 0                        |
+| mitigation-start   | 30                  | 7 (floating-point)       |
+| target-prefix      | 31                  | 4 (array)                |
+| client-identifier  | 32                  | 2 (byte string)          |
+| alt-server         | 33                  | 2                        |
+| alt-server-record  | 34                  | 4                        |
+| addr               | 35                  | 2                        |
+| ttl                | 36                  | 0                        |
+\--------------------+---------------------+--------------------------/
+     Table 4: CBOR mappings used in DOTS signal channel message
+]]></artwork>
+
+          <!---->
+        </figure></t>
+    </section>
+
+    <section title="(D)TLS Protocol Profile and Performance Considerations">
+      <section title="(D)TLS Protocol Profile">
+        <t>This section defines the (D)TLS protocol profile of DOTS signal
+        channel over (D)TLS and DOTS data channel over TLS.</t>
+
+        <t>There are known attacks on (D)TLS, such as machine-in-the-middle
+        and protocol downgrade. These are general attacks on (D)TLS and not
+        specific to DOTS over (D)TLS; please refer to the (D)TLS RFCs for
+        discussion of these security issues. DOTS agents MUST adhere to the
+        (D)TLS implementation recommendations and security considerations of
+        <xref target="RFC7525"></xref> except with respect to (D)TLS version.
+        Since encryption of DOTS using (D)TLS is virtually a green-field
+        deployment DOTS agents MUST implement only (D)TLS 1.2 or later.</t>
+
+        <t>When a DOTS client is configured with a domain name of the DOTS
+        server, and connects to its configured DOTS server, the server may
+        present it with a PKIX certificate. In order to ensure proper
+        authentication, DOTS client MUST verify the entire certification path
+        per <xref target="RFC5280"></xref>. The DOTS client additionaly uses
+        <xref target="RFC6125"></xref> validation techniques to compare the
+        domain name to the certificate provided.</t>
+
+        <t>A key challenge to deploying DOTS is provisioning DOTS clients,
+        including the distribution of keying material to DOTS clients to make
+        possible the required mutual authentication of DOTS agents. EST
+        defines a method of certificate enrollment by which domains operating
+        DOTS servers may provision DOTS clients with all necessary
+        cryptographic keying material, including a private key and certificate
+        with which to authenticate itself. One deployment option is DOTS
+        clients to behave as EST clients for certificate enrollment from an
+        EST server provisioned by the mitigation provider. This document does
+        not specify which EST mechanism the DOTS client uses to achieve
+        initial enrollment.</t>
+
+        <t>Implementations compliant with this profile MUST implement all of
+        the following items:</t>
+
+        <t><list style="symbols">
+            <t>DTLS record replay detection (Section 3.3 of <xref
+            target="RFC6347"></xref>) to protect against replay attacks.</t>
+
+            <t>(D)TLS session resumption without server-side state <xref
+            target="RFC5077"></xref> to resume session and convey the DOTS
+            signal.</t>
+
+            <t>Raw public keys <xref target="RFC7250"></xref> or PSK handshake
+            <xref target="RFC4279"></xref> which reduce the size of the
+            ServerHello, and can be used by DOTS agents that cannot obtain
+            certificates (e.g., DOTS clients and DOTS gateways on private
+            networks).</t>
+          </list></t>
+
+        <t>Implementations compliant with this profile SHOULD implement all of
+        the following items to reduce the delay required to deliver a DOTS
+        signal:</t>
+
+        <t><list style="symbols">
+            <t>TLS False Start <xref target="RFC7918"></xref> which reduces
+            round-trips by allowing the TLS second flight of messages
+            (ChangeCipherSpec) to also contain the DOTS signal.</t>
+
+            <t>Cached Information Extension <xref target="RFC7924"></xref>
+            which avoids transmitting the server's certificate and certificate
+            chain if the client has cached that information from a previous
+            TLS handshake.</t>
+
+            <t>TCP Fast Open <xref target="RFC7413"></xref> can reduce the
+            number of round-trips to convey DOTS signal.</t>
+          </list></t>
+      </section>
+
+      <section anchor="mtu" title="MTU and Fragmentation">
+        <t>To avoid DOTS signal message fragmentation and the consequently
+        decreased probability of message delivery, DOTS agents MUST ensure
+        that the DTLS record MUST fit within a single datagram. If the path
+        MTU is not known to the DOTS server, an IP MTU of 1280 bytes SHOULD be
+        assumed. The length of the URL MUST NOT exceed 256 bytes. If UDP is
+        used to convey the DOTS signal messages then the DOTS client must
+        consider the amount of record expansion expected by the DTLS
+        processing when calculating the size of CoAP message that fits within
+        the path MTU. Path MTU MUST be greater than or equal to [CoAP message
+        size + DTLS overhead of 13 octets + authentication overhead of the
+        negotiated DTLS cipher suite + block padding (Section 4.1.1.1 of <xref
+        target="RFC6347"></xref>). If the request size exceeds the path MTU
+        then the DOTS client MUST split the DOTS signal into separate
+        messages, for example the list of addresses in the 'target-ip'
+        parameter could be split into multiple lists and each list conveyed in
+        a new PUT request.</t>
+
+        <t>Implementation Note: DOTS choice of message size parameters works
+        well with IPv6 and with most of today's IPv4 paths. However, with
+        IPv4, it is harder to absolutely ensure that there is no IP
+        fragmentation. If IPv4 support on unusual networks is a consideration
+        and path MTU is unknown, implementations may want to limit themselves
+        to more conservative IPv4 datagram sizes such as 576 bytes, as per
+        <xref target="RFC0791"></xref> IP packets up to 576 bytes should never
+        need to be fragmented, thus sending a maximum of 500 bytes of DOTS
+        signal over a UDP datagram will generally avoid IP fragmentation.</t>
+      </section>
+    </section>
+
+    <section anchor="DTLS" title="(D)TLS 1.3 Considerations">
+      <t>TLS 1.3 <xref target="I-D.ietf-tls-tls13"></xref> provides critical
+      latency improvements for connection establishment over TLS 1.2. The DTLS
+      1.3 protocol <xref target="I-D.rescorla-tls-dtls13"></xref> is based on
+      the TLS 1.3 protocol and provides equivalent security guarantees. (D)TLS
+      1.3 provides two basic handshake modes of interest to DOTS signal
+      channel:</t>
+
+      <t><list style="symbols">
+          <t>Absent packet loss, a full handshake in which the DOTS client is
+          able to send the DOTS signal message after one round trip and the
+          DOTS server immediately after receiving the first DOTS signal
+          message from the client.</t>
+
+          <t>0-RTT mode in which the DOTS client can authenticate itself and
+          send DOTS signal message on its first flight, thus reducing
+          handshake latency. 0-RTT only works if the DOTS client has
+          previously communicated with that DOTS server, which is very likely
+          with the DOTS signal channel. The DOTS client SHOULD establish a
+          (D)TLS session with the DOTS server during peacetime and share a
+          PSK. During DDOS attack, the DOTS client can use the (D)TLS session
+          to convey the DOTS signal message and if there is no response from
+          the server after multiple re-tries then the DOTS client can resume
+          the (D)TLS session in 0-RTT mode using PSK. A simplified TLS 1.3
+          handshake with 0-RTT DOTS signal message exchange is shown in <xref
+          target="Figure24"></xref>.<figure anchor="Figure24"
+              title="TLS 1.3 handshake with 0-RTT">
+              <artwork align="left"><![CDATA[       DOTS Client                                    DOTS Server
+
+      ClientHello
+      (Finished)
+      (0-RTT DOTS signal message)
+      (end_of_early_data)        -------->
+                                                     ServerHello
+                                            {EncryptedExtensions}
+                                            {ServerConfiguration}
+                                                    {Certificate}
+                                              {CertificateVerify}
+                                                       {Finished}
+                                <--------   [DOTS signal message]
+      {Finished}                -------->
+
+      [DOTS signal message]     <------->   [DOTS signal message]
+]]></artwork>
+            </figure></t>
+        </list></t>
+    </section>
+
+    <section anchor="mutauth"
+             title="Mutual Authentication of DOTS Agents &amp; Authorization of DOTS Clients">
+      <t>(D)TLS based on client certificate can be used for mutual
+      authentication between DOTS agents. If a DOTS gateway is involved, DOTS
+      clients and DOTS gateway MUST perform mutual authentication; only
+      authorized DOTS clients are allowed to send DOTS signals to a DOTS
+      gateway. DOTS gateway and DOTS server MUST perform mutual
+      authentication; DOTS server only allows DOTS signals from authorized
+      DOTS gateway, creating a two-link chain of transitive authentication
+      between the DOTS client and the DOTS server.</t>
+
+      <t><figure anchor="Figure12"
+          title="Example of Authentication and Authorization of DOTS Agents">
+          <artwork align="left"><![CDATA[ +-----------------------------------------------+
+ |       example.com domain         +---------+  |
+ |                                  | AAA     |  |
+ | +---------------+                | Server  |  |
+ | | Application   |                +------+--+  |
+ | | server        +<-----------------+    ^     |
+ | | (DOTS client) |                  |    |     |
+ | +---------------+                  |    |     |
+ |                                    V    V     |    example.net domain
+ |                              +-----+----+--+  |     +---------------+
+ | +--------------+             |             |  |     |               |
+ | |   Guest      +<-----x----->+    DOTS     +<------>+    DOTS       |
+ | | (DOTS client)|             |    Gateway  |  |     |    Server     |
+ | +--------------+             |             |  |     |               |
+ |                              +----+--------+  |     +---------------+
+ |                                   ^           |
+ |                                   |           |
+ | +----------------+                |           |
+ | | DDOS detector  |                |           |
+ | | (DOTS client)  +<---------------+           |
+ | +----------------+                            |
+ +-----------------------------------------------+
+]]></artwork>
+        </figure>In the example depicted in <xref target="Figure12"></xref>,
+      the DOTS gateway and DOTS clients within the 'example.com' domain
+      mutually authenticate with each other. After the DOTS gateway validates
+      the identity of a DOTS client, it communicates with the AAA server in
+      the 'example.com' domain to determine if the DOTS client is authorized
+      to request DDOS mitigation. If the DOTS client is not authorized, a 4.01
+      (Unauthorized) is returned in the response to the DOTS client. In this
+      example, the DOTS gateway only allows the application server and DDOS
+      detector to request DDOS mitigation, but does not permit the user of
+      type 'guest' to request DDOS mitigation.</t>
+
+      <t>Also, DOTS gateway and DOTS server located in different domains MUST
+      perform mutual authentication (e.g., using certificates). A DOTS server
+      will only allow a DOTS gateway with a certificate for a particular
+      domain to request mitigation for that domain. In reference to <xref
+      target="Figure12"></xref>, the DOTS server only allows the DOTS gateway
+      to request mitigation for 'example.com' domain and not for other
+      domains.</t>
+    </section>
+
+    <section anchor="IANA" title="IANA Considerations">
+      <t>This specification registers a default port, new URI suffix in the
+      Well-Known URIs registry, new CoAP response code, new parameters for
+      DOTS signal channel and establishes registries for mappings to CBOR.</t>
+
+      <section anchor="port"
+               title="DOTS Signal Channel UDP and TCP Port Number">
+        <t>IANA has assigned the port number TBD to the DOTS signal channel
+        protocol, for both UDP and TCP.</t>
+      </section>
+
+      <section anchor="uri" title="Well-Known 'dots' URI">
+        <t>This memo registers the 'dots' well-known URI in the Well-Known
+        URIs registry as defined by <xref target="RFC5785"></xref>.</t>
+
+        <t>URI suffix: dots</t>
+
+        <t>Change controller: IETF</t>
+
+        <t>Specification document(s): This RFC</t>
+
+        <t>Related information: None</t>
+      </section>
+
+      <section title="CoAP Response Code">
+        <t>The following entry is added to the "CoAP Response Codes"
+        sub-registry:</t>
+
+        <texttable anchor="alt" title="CoAP Response Code">
+          <ttcol>Code</ttcol>
+
+          <ttcol>Description</ttcol>
+
+          <ttcol>Reference</ttcol>
+
+          <c>3.00</c>
+
+          <c>Alternate server</c>
+
+          <c>[RFCXXXX]</c>
+        </texttable>
+
+        <t></t>
+      </section>
+
+      <section title="DOTS Signal Channel CBOR Mappings Registry">
+        <t>A new registry will be requested from IANA, entitled "DOTS signal
+        channel CBOR Mappings Registry". The registry is to be created as
+        Expert Review Required.</t>
+
+        <section title="Registration Template">
+          <t><list style="hanging">
+              <t hangText="Parameter name:"><vspace /> Parameter names (e.g.,
+              "target_ip") in the DOTS signal channel.</t>
+
+              <t hangText="CBOR Key Value:"><vspace /> Key value for the
+              parameter. The key value MUST be an integer in the range of 1 to
+              65536. The key values in the range of 32768 to 65536 are
+              assigned for Vendor-Specific parameters.</t>
+
+              <t hangText="CBOR Major Type:"><vspace /> CBOR Major type and
+              optional tag for the claim.</t>
+
+              <t hangText="Change Controller:"><vspace /> For Standards Track
+              RFCs, list the "IESG". For others, give the name of the
+              responsible party. Other details (e.g., postal address, email
+              address, home page URI) may also be included.</t>
+
+              <t hangText="Specification Document(s):"><vspace /> Reference to
+              the document or documents that specify the parameter, preferably
+              including URIs that can be used to retrieve copies of the
+              documents. An indication of the relevant sections may also be
+              included but is not required.</t>
+            </list></t>
+        </section>
+
+        <section title="Initial Registry Contents ">
+          <t><?rfc subcompact="yes"?> <list style="symbols">
+              <t>Parameter Name: <spanx style="verb">mitigation-scope</spanx></t>
+
+              <t>CBOR Key Value: 1</t>
+
+              <t>CBOR Major Type: 5</t>
+
+              <t>Change Controller: IESG</t>
+
+              <t>Specification Document(s): this document</t>
+            </list><list style="symbols">
+              <t>Parameter Name: <spanx style="verb">scope</spanx></t>
+
+              <t>CBOR Key Value: 2</t>
+
+              <t>CBOR Major Type: 5</t>
+
+              <t>Change Controller: IESG</t>
+
+              <t>Specification Document(s): this document</t>
+            </list><list style="symbols">
+              <t>Parameter Name: <spanx style="verb">mitigation-id</spanx></t>
+
+              <t>CBOR Key Value: 3</t>
+
+              <t>CBOR Major Type: 0</t>
+
+              <t>Change Controller: IESG</t>
+
+              <t>Specification Document(s): this document</t>
+            </list><list style="symbols">
+              <t>Parameter Name:target-ip</t>
+
+              <t>CBOR Key Value: 4</t>
+
+              <t>CBOR Major Type: 4</t>
+
+              <t>Change Controller: IESG</t>
+
+              <t>Specification Document(s): this document</t>
+            </list><list style="symbols">
+              <t>Parameter Name: target-port-range</t>
+
+              <t>CBOR Key Value: 5</t>
+
+              <t>CBOR Major Type: 4</t>
+
+              <t>Change Controller: IESG</t>
+
+              <t>Specification Document(s): this document</t>
+            </list><list style="symbols">
+              <t>Parameter Name: <spanx style="verb">lower-port</spanx></t>
+
+              <t>CBOR Key Value: 6</t>
+
+              <t>CBOR Major Type: 0</t>
+
+              <t>Change Controller: IESG</t>
+
+              <t>Specification Document(s): this document</t>
+            </list><list style="symbols">
+              <t>Parameter Name: <spanx style="verb">upper-port</spanx></t>
+
+              <t>CBOR Key Value: 7</t>
+
+              <t>CBOR Major Type: 0</t>
+
+              <t>Change Controller: IESG</t>
+
+              <t>Specification Document(s): this document</t>
+            </list><list style="symbols">
+              <t>Parameter Name: target-protocol</t>
+
+              <t>CBOR Key Value: 8</t>
+
+              <t>CBOR Major Type: 4</t>
+
+              <t>Change Controller: IESG</t>
+
+              <t>Specification Document(s): this document</t>
+            </list><list style="symbols">
+              <t>Parameter Name: <spanx style="verb">fqdn</spanx></t>
+
+              <t>CBOR Key Value: 9</t>
+
+              <t>CBOR Major Type: 4</t>
+
+              <t>Change Controller: IESG</t>
+
+              <t>Specification Document(s): this document</t>
+            </list><list style="symbols">
+              <t>Parameter Name: <spanx style="verb">uri</spanx></t>
+
+              <t>CBOR Key Value: 10</t>
+
+              <t>CBOR Major Type: 4</t>
+
+              <t>Change Controller: IESG</t>
+
+              <t>Specification Document(s): this document</t>
+            </list><list style="symbols">
+              <t>Parameter Name: alias-name</t>
+
+              <t>CBOR Key Value: 11</t>
+
+              <t>CBOR Major Type: 4</t>
+
+              <t>Change Controller: IESG</t>
+
+              <t>Specification Document(s): this document</t>
+            </list><list style="symbols">
+              <t>Parameter Name: <spanx style="verb">lifetime</spanx></t>
+
+              <t>CBOR Key Value: 12</t>
+
+              <t>CBOR Major Type: 0</t>
+
+              <t>Change Controller: IESG</t>
+
+              <t>Specification Document(s): this document</t>
+            </list><list style="symbols">
+              <t>Parameter Name: attack-status</t>
+
+              <t>CBOR Key Value: 13</t>
+
+              <t>CBOR Major Type: 0</t>
+
+              <t>Change Controller: IESG</t>
+
+              <t>Specification Document(s): this document</t>
+            </list><list style="symbols">
+              <t>Parameter Name: signal-config</t>
+
+              <t>CBOR Key Value: 14</t>
+
+              <t>CBOR Major Type: 5</t>
+
+              <t>Change Controller: IESG</t>
+
+              <t>Specification Document(s): this document</t>
+            </list><list style="symbols">
+              <t>Parameter Name: heartbeat-interval</t>
+
+              <t>CBOR Key Value: 15</t>
+
+              <t>CBOR Major Type: 0</t>
+
+              <t>Change Controller: IESG</t>
+
+              <t>Specification Document(s): this document</t>
+            </list><list style="symbols">
+              <t>Parameter Name: max-retransmit</t>
+
+              <t>CBOR Key Value: 16</t>
+
+              <t>CBOR Major Type: 0</t>
+
+              <t>Change Controller: IESG</t>
+
+              <t>Specification Document(s): this document</t>
+            </list><list style="symbols">
+              <t>Parameter Name: ack-timeout</t>
+
+              <t>CBOR Key Value: 17</t>
+
+              <t>CBOR Major Type: 0</t>
+
+              <t>Change Controller: IESG</t>
+
+              <t>Specification Document(s): this document</t>
+            </list><list style="symbols">
+              <t>Parameter Name: ack-random-factor</t>
+
+              <t>CBOR Key Value: 18</t>
+
+              <t>CBOR Major Type: 7</t>
+
+              <t>Change Controller: IESG</t>
+
+              <t>Specification Document(s): this document</t>
+            </list><list style="symbols">
+              <t>Parameter Name: MinValue</t>
+
+              <t>CBOR Key Value: 19</t>
+
+              <t>CBOR Major Type: 0</t>
+
+              <t>Change Controller: IESG</t>
+
+              <t>Specification Document(s): this document</t>
+            </list><list style="symbols">
+              <t>Parameter Name: MaxValue</t>
+
+              <t>CBOR Key Value: 20</t>
+
+              <t>CBOR Major Type: 0</t>
+
+              <t>Change Controller: IESG</t>
+
+              <t>Specification Document(s): this document</t>
+            </list><list style="symbols">
+              <t>Parameter Name: status</t>
+
+              <t>CBOR Key Value: 21</t>
+
+              <t>CBOR Major Type: 0</t>
+
+              <t>Change Controller: IESG</t>
+
+              <t>Specification Document(s): this document</t>
+            </list><list style="symbols">
+              <t>Parameter Name: bytes-dropped</t>
+
+              <t>CBOR Key Value: 22</t>
+
+              <t>CBOR Major Type: 0</t>
+
+              <t>Change Controller: IESG</t>
+
+              <t>Specification Document(s): this document</t>
+            </list><list style="symbols">
+              <t>Parameter Name: bps-dropped</t>
+
+              <t>CBOR Key Value: 23</t>
+
+              <t>CBOR Major Type: 0</t>
+
+              <t>Change Controller: IESG</t>
+
+              <t>Specification Document(s): this document</t>
+            </list><list style="symbols">
+              <t>Parameter Name: pkts-dropped</t>
+
+              <t>CBOR Key Value: 24</t>
+
+              <t>CBOR Major Type: 0</t>
+
+              <t>Change Controller: IESG</t>
+
+              <t>Specification Document(s): this document</t>
+            </list><list style="symbols">
+              <t>Parameter Name: pps-dropped</t>
+
+              <t>CBOR Key Value: 25</t>
+
+              <t>CBOR Major Type: 0</t>
+
+              <t>Change Controller: IESG</t>
+
+              <t>Specification Document(s): this document</t>
+            </list><list style="symbols">
+              <t>Parameter Name: session-id</t>
+
+              <t>CBOR Key Value: 26</t>
+
+              <t>CBOR Major Type: 0</t>
+
+              <t>Change Controller: IESG</t>
+
+              <t>Specification Document(s): this document</t>
+            </list><list style="symbols">
+              <t>Parameter Name: trigger-mitigation</t>
+
+              <t>CBOR Key Value: 27</t>
+
+              <t>CBOR Major Type: 7</t>
+
+              <t>Change Controller: IESG</t>
+
+              <t>Specification Document(s): this document</t>
+            </list><list style="symbols">
+              <t>Parameter Name: missing-hb-allowed</t>
+
+              <t>CBOR Key Value: 28</t>
+
+              <t>CBOR Major Type: 0</t>
+
+              <t>Change Controller: IESG</t>
+
+              <t>Specification Document(s): this document</t>
+            </list><list style="symbols">
+              <t>Parameter Name: CurrentValue</t>
+
+              <t>CBOR Key Value: 29</t>
+
+              <t>CBOR Major Type: 0</t>
+
+              <t>Change Controller: IESG</t>
+
+              <t>Specification Document(s): this document</t>
+            </list><list style="symbols">
+              <t>Parameter Name:mitigation-start</t>
+
+              <t>CBOR Key Value: 30</t>
+
+              <t>CBOR Major Type: 7</t>
+
+              <t>Change Controller: IESG</t>
+
+              <t>Specification Document(s): this document</t>
+            </list><list style="symbols">
+              <t>Parameter Name:target-prefix</t>
+
+              <t>CBOR Key Value: 31</t>
+
+              <t>CBOR Major Type: 4</t>
+
+              <t>Change Controller: IESG</t>
+
+              <t>Specification Document(s): this document</t>
+            </list></t>
+
+          <t><list style="symbols">
+              <t>Parameter Name:client-identifier</t>
+
+              <t>CBOR Key Value: 32</t>
+
+              <t>CBOR Major Type: 2</t>
+
+              <t>Change Controller: IESG</t>
+
+              <t>Specification Document(s): this document</t>
+            </list><list style="symbols">
+              <t>Parameter Name:alt-server</t>
+
+              <t>CBOR Key Value: 33</t>
+
+              <t>CBOR Major Type: 2</t>
+
+              <t>Change Controller: IESG</t>
+
+              <t>Specification Document(s): this document</t>
+            </list><list style="symbols">
+              <t>Parameter Name:alt-server-record</t>
+
+              <t>CBOR Key Value: 34</t>
+
+              <t>CBOR Major Type: 4</t>
+
+              <t>Change Controller: IESG</t>
+
+              <t>Specification Document(s): this document</t>
+            </list><list style="symbols">
+              <t>Parameter Name:addr</t>
+
+              <t>CBOR Key Value: 35</t>
+
+              <t>CBOR Major Type: 2</t>
+
+              <t>Change Controller: IESG</t>
+
+              <t>Specification Document(s): this document</t>
+            </list><list style="symbols">
+              <t>Parameter Name:ttl</t>
+
+              <t>CBOR Key Value: 36</t>
+
+              <t>CBOR Major Type: 0</t>
+
+              <t>Change Controller: IESG</t>
+
+              <t>Specification Document(s): this document</t>
+            </list></t>
+        </section>
+      </section>
+
+      <section anchor="sec-IANA" title="YANG Modules">
+        <t>This document requests IANA to register the following URIs in the
+        "IETF XML Registry" <xref target="RFC3688"></xref>: <figure>
+            <artwork><![CDATA[         URI: urn:ietf:params:xml:ns:yang:ietf-dots-signal
+         Registrant Contact: The IESG.
+         XML: N/A; the requested URI is an XML namespace.
+
+         URI: urn:ietf:params:xml:ns:yang:ietf-dots-signal-config
+         Registrant Contact: The IESG.
+         XML: N/A; the requested URI is an XML namespace.
+]]></artwork>
+          </figure> This document requests IANA to register the following YANG
+        modules in the "YANG Module Names" registry <xref
+        target="RFC7950"></xref>.<figure>
+            <artwork><![CDATA[         name: ietf-signal
+         namespace: urn:ietf:params:xml:ns:yang:ietf-dots-signal
+         prefix: signal
+         reference: RFC XXXX
+
+         name: ietf-dots-signal-config
+         namespace: urn:ietf:params:xml:ns:yang:ietf-dots-signal-config
+         prefix: config
+         reference: RFC XXXX
+]]></artwork>
+          </figure></t>
+      </section>
+    </section>
+
+    <section title="Implementation Status">
+      <t>[Note to RFC Editor: Please remove this section and reference to
+      <xref target="RFC7942"></xref> prior to publication.]</t>
+
+      <t>This section records the status of known implementations of the
+      protocol defined by this specification at the time of posting of this
+      Internet-Draft, and is based on a proposal described in <xref
+      target="RFC7942"></xref>. The description of implementations in this
+      section is intended to assist the IETF in its decision processes in
+      progressing drafts to RFCs. Please note that the listing of any
+      individual implementation here does not imply endorsement by the IETF.
+      Furthermore, no effort has been spent to verify the information
+      presented here that was supplied by IETF contributors. This is not
+      intended as, and must not be construed to be, a catalog of available
+      implementations or their features. Readers are advised to note that
+      other implementations may exist.</t>
+
+      <t>According to <xref target="RFC7942"></xref>, "this will allow
+      reviewers and working groups to assign due consideration to documents
+      that have the benefit of running code, which may serve as evidence of
+      valuable experimentation and feedback that have made the implemented
+      protocols more mature. It is up to the individual working groups to use
+      this information as they see fit".</t>
+
+      <section title="nttdots">
+        <t><list style="hanging">
+            <t hangText="Organization: ">NTT Communication is developing a
+            DOTS client and DOTS server software based on DOTS signal channel
+            specified in this draft. It will be open-sourced.</t>
+
+            <t hangText="Description: ">Early implementation of DOTS protocol.
+            It is aimed to implement a full DOTS protocol spec in accordance
+            with maturing of DOTS protocol itself.</t>
+
+            <t
+            hangText="Implementation: ">https://github.com/nttdots/go-dots</t>
+
+            <t hangText="Level of maturity: ">It is a early implementation of
+            DOTS protocol. Messaging between DOTS clients and DOTS servers has
+            been tested. Level of maturity will increase in accordance with
+            maturing of DOTS protocol itself.</t>
+
+            <t hangText="Coverage: ">Capability of DOTS client: sending DOTS
+            messages to the DOTS server in CoAP over DTLS as dots-signal.
+            Capability of DOTS server: receiving dots-signal, validating
+            received dots-signal, starting mitigation by handing over the
+            dots-signal to DDOS mitigator.</t>
+
+            <t hangText="Licensing: ">It will be open-sourced with BSD
+            3-clause license.</t>
+
+            <t hangText="Implementation experience: ">It is implemented in
+            Go-lang. Core specification of signaling is mature to be
+            implemented, however, finding good libraries(like DTLS, CoAP) is
+            rather difficult.</t>
+
+            <t hangText="Contact: ">Kaname Nishizuka
+            &lt;kaname@nttv6.jp&gt;</t>
+          </list></t>
+      </section>
+    </section>
+
+    <section anchor="security" title="Security Considerations">
+      <t>Authenticated encryption MUST be used for data confidentiality and
+      message integrity. (D)TLS based on client certificate MUST be used for
+      mutual authentication. The interaction between the DOTS agents requires
+      Datagram Transport Layer Security (DTLS) and Transport Layer Security
+      (TLS) with a cipher suite offering confidentiality protection and the
+      guidance given in <xref target="RFC7525"></xref> MUST be followed to
+      avoid attacks on (D)TLS.</t>
+
+      <t>A single DOTS signal channel between DOTS agents can be used to
+      exchange multiple DOTS signal messages. To reduce DOTS client and DOTS
+      server workload, DOTS client SHOULD re-use the (D)TLS session.</t>
+
+      <t>If TCP is used between DOTS agents, an attacker may be able to inject
+      RST packets, bogus application segments, etc., regardless of whether TLS
+      authentication is used. Because the application data is TLS protected,
+      this will not result in the application receiving bogus data, but it
+      will constitute a DoS on the connection. This attack can be countered by
+      using TCP-AO <xref target="RFC5925"></xref>. If TCP-AO is used, then any
+      bogus packets injected by an attacker will be rejected by the TCP-AO
+      integrity check and therefore will never reach the TLS layer.</t>
+
+      <t>In order to prevent leaking internal information outside a
+      client-domain, DOTS gateways located in the client-domain SHOULD NOT
+      reveal the identity of internal DOTS clients (client-identifier) unless
+      explicitly configured to do so.</t>
+
+      <t>Special care should be taken in order to ensure that the activation
+      of the proposed mechanism won't have an impact on the stability of the
+      network (including connectivity and services delivered over that
+      network).</t>
+
+      <t>Involved functional elements in the cooperation system must establish
+      exchange instructions and notification over a secure and authenticated
+      channel. Adequate filters can be enforced to avoid that nodes outside a
+      trusted domain can inject request such as deleting filtering rules.
+      Nevertheless, attacks can be initiated from within the trusted domain if
+      an entity has been corrupted. Adequate means to monitor trusted nodes
+      should also be enabled.</t>
+    </section>
+
+    <section anchor="contr" title="Contributors">
+      <t>The following individuals have contributed to this document:</t>
+
+      <t>Mike Geller Cisco Systems, Inc. 3250 Florida 33309 USA Email:
+      mgeller@cisco.com</t>
+
+      <t>Robert Moskowitz HTT Consulting Oak Park, MI 42837 United States
+      Email: rgm@htt-consult.com</t>
+
+      <t>Dan Wing Email: dwing-ietf@fuggles.com</t>
+    </section>
+
+    <section anchor="ack" title="Acknowledgements">
+      <t>Thanks to Christian Jacquenet, Roland Dobbins, Roman D. Danyliw,
+      Michael Richardson, Ehud Doron, Kaname Nishizuka, Dave Dolson, Liang
+      Xia, Jon Shallow, and Gilbert Clark for the discussion and comments.</t>
+    </section>
+  </middle>
+
+  <back>
+    <references title="Normative References">
+      <?rfc include="reference.RFC.2119"?>
+
+      <?rfc include="reference.RFC.7525"?>
+
+      <?rfc include="reference.RFC.6347"?>
+
+      <?rfc include="reference.RFC.5246"?>
+
+      <?rfc include="reference.RFC.5925"?>
+
+      <?rfc include="reference.RFC.7252"?>
+
+      <?rfc include="reference.RFC.7250"?>
+
+      <?rfc include="reference.RFC.7641"?>
+
+      <?rfc include="reference.RFC.6234"?>
+
+      <?rfc include="reference.RFC.5785"?>
+
+      <?rfc include="reference.RFC.4279"?>
+
+      <?rfc include="reference.RFC.5280"?>
+
+      <?rfc include="reference.RFC.6125"?>
+
+      <?rfc include='reference.RFC.3688'?>
+
+      <?rfc include="reference.I-D.ietf-core-coap-tcp-tls"?>
+
+      <?rfc include="reference.RFC.7950"?>
+    </references>
+
+    <references title="Informative References">
+      <?rfc include="reference.RFC.4732"?>
+
+      <?rfc include="reference.RFC.7942"?>
+
+      <?rfc include='reference.RFC.4987'?>
+
+      <?rfc include="reference.RFC.7049"?>
+
+      <?rfc include="reference.RFC.7413"?>
+
+      <?rfc include="reference.RFC.5077"?>
+
+      <?rfc include='reference.RFC.6555'?>
+
+      <?rfc include='reference.RFC.0791'?>
+
+      <?rfc include='reference.RFC.6724'?>
+
+      <?rfc include="reference.RFC.4632"?>
+
+      <?rfc include="reference.RFC.7918"?>
+
+      <?rfc include="reference.RFC.7924"?>
+
+      <?rfc include="reference.RFC.7589"?>
+
+      <?rfc include='reference.RFC.4787'?>
+
+      <?rfc include='reference.RFC.7030'?>
+
+      <?rfc include='reference.RFC.4340'?>
+
+      <?rfc include='reference.RFC.4960'?>
+
+      <?rfc include='reference.I-D.ietf-netmod-yang-tree-diagrams'?>
+
+      <?rfc include="reference.I-D.ietf-tls-tls13"?>
+
+      <?rfc include="reference.I-D.ietf-core-yang-cbor"?>
+
+      <?rfc include="reference.I-D.ietf-core-comi"?>
+
+      <?rfc include="reference.I-D.ietf-dots-requirements"?>
+
+      <?rfc include="reference.I-D.ietf-dots-use-cases"?>
+
+      <?rfc include="reference.I-D.ietf-dots-architecture"
+?>
+
+      <?rfc include="reference.I-D.ietf-dots-data-channel" ?>
+
+      <?rfc include="reference.I-D.rescorla-tls-dtls13" ?>
+
+      <?rfc include="reference.RFC.8085"?>
+
+      <reference anchor="proto_numbers"
+                 target="http://www.iana.org/assignments/protocol-numbers">
+        <front>
+          <title>IANA, "Protocol Numbers"</title>
+
+          <author>
+            <organization></organization>
+          </author>
+
+          <date year="2011" />
+        </front>
+      </reference>
+    </references>
+  </back>
+</rfc>
