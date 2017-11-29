@@ -196,7 +196,8 @@
 
       <t>An example of network diagram showing a deployment of DOTS agents is
       shown in <xref target="fig1"></xref>. In this example, the DOTS server
-      is operating on the access network.</t>
+      is operating on the access network. The DOTS client is located in the LAN, while
+      a DOTS gateway is embeded in the CPE (Customer Premises Equipment). </t>
 
       <t><figure anchor="fig1" title="Sample DOTS Deployment (1)">
           <artwork align="center"><![CDATA[   
@@ -224,7 +225,7 @@
 ]]></artwork>
         </figure>In typical deployments, the DOTS client belongs to a
       different administrative domain than the DOTS server. For example, the
-      DOTS client is a firewall protecting services owned and operated by an
+      DOTS client is a firewall protecting services owned and operated by a
       domain, while the DOTS server is owned and operated by a different
       domain providing DDoS mitigation services. That domain providing DDoS
       mitigation service might, or might not, also provide Internet access
@@ -362,7 +363,8 @@
         <t>The DOTS server MUST support the use of the path-prefix of "/.well-
         known/" as defined in <xref target="RFC5785"></xref> and the
         registered name of "dots". Each DOTS operation is indicated by a
-        path-suffix that indicates the intended operation.</t>
+        path-suffix that indicates the intended operation (<xref
+      target="uris"></xref>).</t>
 
         <texttable align="center" anchor="uris" style="all"
                    title="Operations and their corresponding URIs">
