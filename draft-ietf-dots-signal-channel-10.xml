@@ -529,10 +529,10 @@ DOTS client                                               DOTS server
            "target-protocol": [
              integer
            ],
-           "fqdn": [
+           "target-fqdn": [
              "string"
            ],
-           "uri": [
+           "target-uri": [
              "string"
            ],
            "alias-name": [
@@ -596,14 +596,14 @@ DOTS client                                               DOTS server
               target="proto_numbers"></xref>. The value 0 has a special
               meaning for 'all protocols'. This is an optional attribute.</t>
 
-              <t hangText="fqdn: ">A list of Fully Qualified Domain Names.
-              Fully Qualified Domain Name (FQDN) is the full name of a system,
-              rather than just its hostname. For example, "venera" is a
-              hostname, and "venera.isi.edu" is an FQDN. This is an optional
+              <t hangText="target-fqdn: ">A list of Fully Qualified Domain
+              Names. Fully Qualified Domain Name (FQDN) is the full name of a
+              system, rather than just its hostname. For example, "venera" is
+              a hostname, and "venera.isi.edu" is an FQDN. This is an optional
               attribute.</t>
 
-              <t hangText="uri: ">A list of Uniform Resource Identifiers
-              (URI). This is an optional attribute.</t>
+              <t hangText="target-uri: ">A list of Uniform Resource
+              Identifiers (URI). This is an optional attribute.</t>
 
               <t hangText="alias-name:">A list of aliases. Aliases can be
               created using the DOTS data channel (Section 3.1.1 of <xref
@@ -643,9 +643,9 @@ DOTS client                                               DOTS server
           resolve represent the full scope of the mitigation.</t>
 
           <t>In the PUT request at least one of the attributes 'target-ip' or
-          'target-prefix' or 'fqdn' or 'uri 'or 'alias-name' MUST be present.
-          If the attribute value is empty, then the attribute MUST NOT be
-          present in the request. DOTS agents can safely ignore
+          'target-prefix' or 'target-fqdn' or 'target-uri 'or 'alias-name'
+          MUST be present. If the attribute value is empty, then the attribute
+          MUST NOT be present in the request. DOTS agents can safely ignore
           Vendor-Specific parameters they don't understand.</t>
 
           <t>The relative order of two mitigation requests from a DOTS client
@@ -705,10 +705,10 @@ DOTS client                                               DOTS server
           detect duplicate mitigation requests. If the mitigation request
           contains both alias-name and other parameters identifying the target
           resources (such as, 'target-ip', 'target-prefix',
-          'target-port-range', 'fqdn', or 'uri'), then the DOTS server appends
-          the parameter values in 'alias-name' with the corresponding
-          parameter values in 'target-ip', 'target-prefix',
-          'target-port-range', 'fqdn', or 'uri'.</t>
+          'target-port-range', 'target-fqdn', or 'target-uri'), then the DOTS
+          server appends the parameter values in 'alias-name' with the
+          corresponding parameter values in 'target-ip', 'target-prefix',
+          'target-port-range', 'target-fqdn', or 'target-uri'.</t>
 
           <t><xref target="Figure2"></xref> shows a PUT request example to
           signal that ports 80, 8080, and 443 on the servers 2001:db8:6401::1
@@ -1225,10 +1225,10 @@ DOTS Client                   DOTS Server
            "target-protocol": [
              integer
            ],
-           "fqdn": [
+           "target-fqdn": [
              "string"
            ],
-           "uri": [
+           "target-uri": [
              "string"
            ],
            "alias-name": [
@@ -1782,8 +1782,8 @@ DOTS Client                   DOTS Server
           |  +--rw lower-port    inet:port-number
           |  +--rw upper-port    inet:port-number
           +--rw target-protocol*     uint8
-          +--rw fqdn*                inet:domain-name
-          +--rw uri*                 inet:uri
+          +--rw target-fqdn*         inet:domain-name
+          +--rw target-uri*          inet:uri
           +--rw alias-name*          string
           +--rw lifetime?            int32
 ]]></artwork>
@@ -1919,12 +1919,12 @@ module ietf-dots-signal {
                      For example, 6 for a TCP or 17 for UDP.";
               }
 
-              leaf-list fqdn {
+              leaf-list target-fqdn {
                    type inet:domain-name;
                    description "FQDN";
               }
 
-              leaf-list uri {
+              leaf-list target-uri {
                   type inet:uri;
                   description "URI";
               }
@@ -2092,8 +2092,8 @@ module ietf-dots-signal-config {
 | lower-port         | 6                   | 0                        |
 | upper-port         | 7                   | 0                        |
 | target-protocol    | 8                   | 4                        |
-| fqdn               | 9                   | 4                        |
-| uri                | 10                  | 4                        |
+| target-fqdn        | 9                   | 4                        |
+| target-uri         | 10                  | 4                        |
 | alias-name         | 11                  | 4                        |
 | lifetime           | 12                  | 0                        |
 | attack-status      | 13                  | 0                        |
@@ -2491,7 +2491,7 @@ module ietf-dots-signal-config {
 
               <t>Specification Document(s): this document</t>
             </list><list style="symbols">
-              <t>Parameter Name: <spanx style="verb">fqdn</spanx></t>
+              <t>Parameter Name: <spanx style="verb">target-fqdn</spanx></t>
 
               <t>CBOR Key Value: 9</t>
 
@@ -2501,7 +2501,7 @@ module ietf-dots-signal-config {
 
               <t>Specification Document(s): this document</t>
             </list><list style="symbols">
-              <t>Parameter Name: <spanx style="verb">uri</spanx></t>
+              <t>Parameter Name: <spanx style="verb">target-uri</spanx></t>
 
               <t>CBOR Key Value: 10</t>
 

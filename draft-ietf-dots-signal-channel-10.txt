@@ -592,10 +592,10 @@ Internet-Draft             DOTS Signal Channel             November 2017
               "target-protocol": [
                 integer
               ],
-              "fqdn": [
+              "target-fqdn": [
                 "string"
               ],
-              "uri": [
+              "target-uri": [
                 "string"
               ],
               "alias-name": [
@@ -664,8 +664,8 @@ Internet-Draft             DOTS Signal Channel             November 2017
       a special meaning for 'all protocols'.  This is an optional
       attribute.
 
-   fqdn:   A list of Fully Qualified Domain Names.  Fully Qualified
-      Domain Name (FQDN) is the full name of a system, rather than just
+   target-fqdn:   A list of Fully Qualified Domain Names.  Fully
+      Qualified Domain Name (FQDN) is the full name of a system, rather
 
 
 
@@ -674,11 +674,11 @@ Reddy, et al.             Expires June 1, 2018                 [Page 12]
 Internet-Draft             DOTS Signal Channel             November 2017
 
 
-      its hostname.  For example, "venera" is a hostname, and
+      than just its hostname.  For example, "venera" is a hostname, and
       "venera.isi.edu" is an FQDN.  This is an optional attribute.
 
-   uri:   A list of Uniform Resource Identifiers (URI).  This is an
-      optional attribute.
+   target-uri:   A list of Uniform Resource Identifiers (URI).  This is
+      an optional attribute.
 
    alias-name:  A list of aliases.  Aliases can be created using the
       DOTS data channel (Section 3.1.1 of [I-D.ietf-dots-data-channel])
@@ -717,9 +717,9 @@ Internet-Draft             DOTS Signal Channel             November 2017
    represent the full scope of the mitigation.
 
    In the PUT request at least one of the attributes 'target-ip' or
-   'target-prefix' or 'fqdn' or 'uri 'or 'alias-name' MUST be present.
-   If the attribute value is empty, then the attribute MUST NOT be
-   present in the request.  DOTS agents can safely ignore Vendor-
+   'target-prefix' or 'target-fqdn' or 'target-uri 'or 'alias-name' MUST
+   be present.  If the attribute value is empty, then the attribute MUST
+   NOT be present in the request.  DOTS agents can safely ignore Vendor-
    Specific parameters they don't understand.
 
 
@@ -791,10 +791,11 @@ Internet-Draft             DOTS Signal Channel             November 2017
    the DOTS server uses 'mitigation-id' parameter value to detect
    duplicate mitigation requests.  If the mitigation request contains
    both alias-name and other parameters identifying the target resources
-   (such as, 'target-ip', 'target-prefix', 'target-port-range', 'fqdn',
-   or 'uri'), then the DOTS server appends the parameter values in
-   'alias-name' with the corresponding parameter values in 'target-ip',
-   'target-prefix', 'target-port-range', 'fqdn', or 'uri'.
+   (such as, 'target-ip', 'target-prefix', 'target-port-range', 'target-
+   fqdn', or 'target-uri'), then the DOTS server appends the parameter
+   values in 'alias-name' with the corresponding parameter values in
+   'target-ip', 'target-prefix', 'target-port-range', 'target-fqdn', or
+   'target-uri'.
 
    Figure 6 shows a PUT request example to signal that ports 80, 8080,
    and 443 on the servers 2001:db8:6401::1 and 2001:db8:6401::2 are
@@ -833,7 +834,6 @@ Internet-Draft             DOTS Signal Channel             November 2017
            "target-protocol": [
              6
            ]
-        }
 
 
 
@@ -842,6 +842,7 @@ Reddy, et al.             Expires June 1, 2018                 [Page 15]
 Internet-Draft             DOTS Signal Channel             November 2017
 
 
+        }
       ]
     }
   }
@@ -888,8 +889,7 @@ A1                                      # map(1)
    using CoAP response codes.  CoAP 2.xx codes are success.  CoAP 4.xx
    codes are some sort of invalid requests (client errors).  COAP 5.xx
    codes are returned if the DOTS server has erred or is currently
-   unavailable to provide mitigation in response to the mitigation
-   request from the DOTS client.
+
 
 
 
@@ -897,6 +897,9 @@ Reddy, et al.             Expires June 1, 2018                 [Page 16]
 
 Internet-Draft             DOTS Signal Channel             November 2017
 
+
+   unavailable to provide mitigation in response to the mitigation
+   request from the DOTS client.
 
    Figure 7 shows an example of a PUT request that is successfully
    processed (i.e., CoAP 2.xx response codes).
@@ -942,9 +945,6 @@ Internet-Draft             DOTS Signal Channel             November 2017
 
    A DOTS gateway MUST update the 'client-identifier' list in the
    response to remove the 'client-identifier' value it had added in the
-   corresponding request before forwarding the response to the DOTS
-   client.
-
 
 
 
@@ -953,6 +953,9 @@ Reddy, et al.             Expires June 1, 2018                 [Page 17]
 
 Internet-Draft             DOTS Signal Channel             November 2017
 
+
+   corresponding request before forwarding the response to the DOTS
+   client.
 
 4.4.2.  Withdraw a Mitigation
 
@@ -999,9 +1002,6 @@ Internet-Draft             DOTS Signal Channel             November 2017
    incurred by route propagation.  The active-but-terminating period
    SHOULD be set by default to 120 seconds.  If the client requests
    mitigation again before the initial active-but-terminating period
-   elapses, the DOTS server MAY exponentially increase the active-but-
-   terminating period up to a maximum of 300 seconds (5 minutes).  After
-   the active-but-terminating period elapses, the DOTS server MUST treat
 
 
 
@@ -1010,6 +1010,9 @@ Reddy, et al.             Expires June 1, 2018                 [Page 18]
 Internet-Draft             DOTS Signal Channel             November 2017
 
 
+   elapses, the DOTS server MAY exponentially increase the active-but-
+   terminating period up to a maximum of 300 seconds (5 minutes).  After
+   the active-but-terminating period elapses, the DOTS server MUST treat
    the mitigation as terminated, as the DOTS client is no longer
    responsible for the mitigation.  For example, if there is a financial
    relationship between the DOTS client and server domains, the DOTS
@@ -1029,9 +1032,6 @@ Internet-Draft             DOTS Signal Channel             November 2017
    supported.
 
    The examples depicted in Figure 9 assume the default of "c=a".
-
-
-
 
 
 
@@ -1430,10 +1430,10 @@ Internet-Draft             DOTS Signal Channel             November 2017
               "target-protocol": [
                 integer
               ],
-              "fqdn": [
+              "target-fqdn": [
                 "string"
               ],
-              "uri": [
+              "target-uri": [
                 "string"
               ],
               "alias-name": [
@@ -2085,8 +2085,8 @@ Internet-Draft             DOTS Signal Channel             November 2017
              |  +--rw lower-port    inet:port-number
              |  +--rw upper-port    inet:port-number
              +--rw target-protocol*     uint8
-             +--rw fqdn*                inet:domain-name
-             +--rw uri*                 inet:uri
+             +--rw target-fqdn*         inet:domain-name
+             +--rw target-uri*          inet:uri
              +--rw alias-name*          string
              +--rw lifetime?            int32
 
@@ -2242,12 +2242,12 @@ Reddy, et al.             Expires June 1, 2018                 [Page 40]
 Internet-Draft             DOTS Signal Channel             November 2017
 
 
-              leaf-list fqdn {
+              leaf-list target-fqdn {
                    type inet:domain-name;
                    description "FQDN";
               }
 
-              leaf-list uri {
+              leaf-list target-uri {
                   type inet:uri;
                   description "URI";
               }
@@ -2477,8 +2477,8 @@ Internet-Draft             DOTS Signal Channel             November 2017
  | lower-port         | 6                   | 0                        |
  | upper-port         | 7                   | 0                        |
  | target-protocol    | 8                   | 4                        |
- | fqdn               | 9                   | 4                        |
- | uri                | 10                  | 4                        |
+ | target-fqdn        | 9                   | 4                        |
+ | target-uri         | 10                  | 4                        |
  | alias-name         | 11                  | 4                        |
  | lifetime           | 12                  | 0                        |
  | attack-status      | 13                  | 0                        |
@@ -2890,13 +2890,13 @@ Internet-Draft             DOTS Signal Channel             November 2017
    o  Change Controller: IESG
    o  Specification Document(s): this document
 
-   o  Parameter Name: "fqdn"
+   o  Parameter Name: "target-fqdn"
    o  CBOR Key Value: 9
    o  CBOR Major Type: 4
    o  Change Controller: IESG
    o  Specification Document(s): this document
 
-   o  Parameter Name: "uri"
+   o  Parameter Name: "target-uri"
    o  CBOR Key Value: 10
    o  CBOR Major Type: 4
    o  Change Controller: IESG
