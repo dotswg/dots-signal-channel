@@ -200,8 +200,9 @@
 
       <t><figure anchor="fig1" title="Sample DOTS Deployment (1)">
           <artwork align="center"><![CDATA[   
-   Network                                           
-   Resource         CPE router            Access network     __________      
+   Network         Customer Premises 
+   Resource        Equipment (CPE) 
+                     router               Access network     __________      
  +-----------+    +--------------+       +-------------+    /          \   
  |           |____|              |_______|             |___ | Internet |
  |DOTS client|    | DOTS gateway |       | DOTS server |    |          |
@@ -215,7 +216,7 @@
       <t><figure anchor="fig_blah" title="Sample DOTS Deployment (2)">
           <artwork align="center"><![CDATA[   
   Network                                               DDoS mitigation  
-  Resource        CPE router             __________         service
+  Resource          CPE router           __________         service
  +-----------+    +-------------+       /          \    +-------------+
  |           |____|             |_______|          |___ |             |
  |DOTS client|    |DOTS gateway |       | Internet |    | DOTS server |
@@ -224,7 +225,7 @@
 ]]></artwork>
         </figure>In typical deployments, the DOTS client belongs to a
       different administrative domain than the DOTS server. For example, the
-      DOTS client is a firewall protecting services owned and operated by an
+      DOTS client is a firewall protecting services owned and operated by a
       domain, while the DOTS server is owned and operated by a different
       domain providing DDoS mitigation services. That domain providing DDoS
       mitigation service might, or might not, also provide Internet access
@@ -362,7 +363,10 @@
         <t>The DOTS server MUST support the use of the path-prefix of "/.well-
         known/" as defined in <xref target="RFC5785"></xref> and the
         registered name of "dots". Each DOTS operation is indicated by a
-        path-suffix that indicates the intended operation.</t>
+        path-suffix that indicates the intended operation. The operation path
+        (<xref target="uris"></xref>) is appended to the path-prefix to form
+        the URI used with a CoAP request to perform the desired DOTS
+        operation.</t>
 
         <texttable align="center" anchor="uris" style="all"
                    title="Operations and their corresponding URIs">
@@ -2868,8 +2872,7 @@ module ietf-dots-signal-config {
 
     <section anchor="security" title="Security Considerations">
       <t>Authenticated encryption MUST be used for data confidentiality and
-      message integrity. (D)TLS based on client certificate MUST be used for
-      mutual authentication. The interaction between the DOTS agents requires
+      message integrity. The interaction between the DOTS agents requires
       Datagram Transport Layer Security (DTLS) and Transport Layer Security
       (TLS) with a cipher suite offering confidentiality protection and the
       guidance given in <xref target="RFC7525"></xref> MUST be followed to
